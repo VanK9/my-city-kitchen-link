@@ -14,7 +14,261 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      events: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          city: string
+          created_at: string | null
+          current_participants: number | null
+          description: string | null
+          event_date: string
+          id: string
+          is_approved: boolean | null
+          location: string
+          materials_needed: string[] | null
+          max_participants: number | null
+          organizer_id: string | null
+          price: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          city: string
+          created_at?: string | null
+          current_participants?: number | null
+          description?: string | null
+          event_date: string
+          id?: string
+          is_approved?: boolean | null
+          location: string
+          materials_needed?: string[] | null
+          max_participants?: number | null
+          organizer_id?: string | null
+          price?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          city?: string
+          created_at?: string | null
+          current_participants?: number | null
+          description?: string | null
+          event_date?: string
+          id?: string
+          is_approved?: boolean | null
+          location?: string
+          materials_needed?: string[] | null
+          max_participants?: number | null
+          organizer_id?: string | null
+          price?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          display_name: string | null
+          experience_years: number | null
+          id: string
+          specialty: string | null
+          updated_at: string | null
+          user_id: string | null
+          verification_status:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          experience_years?: number | null
+          id?: string
+          specialty?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          experience_years?: number | null
+          id?: string
+          specialty?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: []
+      }
+      recipes: {
+        Row: {
+          author_id: string | null
+          cook_time: number | null
+          created_at: string | null
+          description: string | null
+          difficulty_level: number | null
+          id: string
+          image_url: string | null
+          ingredients: Json
+          instructions: Json
+          is_premium: boolean | null
+          prep_time: number | null
+          price: number | null
+          servings: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          author_id?: string | null
+          cook_time?: number | null
+          created_at?: string | null
+          description?: string | null
+          difficulty_level?: number | null
+          id?: string
+          image_url?: string | null
+          ingredients: Json
+          instructions: Json
+          is_premium?: boolean | null
+          prep_time?: number | null
+          price?: number | null
+          servings?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          author_id?: string | null
+          cook_time?: number | null
+          created_at?: string | null
+          description?: string | null
+          difficulty_level?: number | null
+          id?: string
+          image_url?: string | null
+          ingredients?: Json
+          instructions?: Json
+          is_premium?: boolean | null
+          prep_time?: number | null
+          price?: number | null
+          servings?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          stripe_customer_id: string | null
+          subscribed: boolean
+          subscription_end: string | null
+          subscription_tier:
+            | Database["public"]["Enums"]["subscription_tier"]
+            | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?:
+            | Database["public"]["Enums"]["subscription_tier"]
+            | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?:
+            | Database["public"]["Enums"]["subscription_tier"]
+            | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      tutorials: {
+        Row: {
+          author_id: string | null
+          category: string
+          content: Json
+          created_at: string | null
+          description: string | null
+          difficulty_level: number | null
+          duration: number | null
+          id: string
+          is_free: boolean | null
+          title: string
+          updated_at: string | null
+          video_url: string | null
+        }
+        Insert: {
+          author_id?: string | null
+          category: string
+          content: Json
+          created_at?: string | null
+          description?: string | null
+          difficulty_level?: number | null
+          duration?: number | null
+          id?: string
+          is_free?: boolean | null
+          title: string
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          author_id?: string | null
+          category?: string
+          content?: Json
+          created_at?: string | null
+          description?: string | null
+          difficulty_level?: number | null
+          duration?: number | null
+          id?: string
+          is_free?: boolean | null
+          title?: string
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +277,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      subscription_tier: "basic" | "premium" | "pro"
+      verification_status: "pending" | "verified" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +405,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      subscription_tier: ["basic", "premium", "pro"],
+      verification_status: ["pending", "verified", "rejected"],
+    },
   },
 } as const
