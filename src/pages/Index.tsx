@@ -15,44 +15,11 @@ const Index = () => {
   const { toast } = useToast();
 
   const getUserLocation = () => {
-    setLoading(true);
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          try {
-            const { latitude, longitude } = position.coords;
-            const response = await fetch(
-              `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=el`
-            );
-            const data = await response.json();
-            setLocation({
-              city: data.city || data.locality || "Άγνωστη πόλη",
-              country: data.countryName || "Ελλάδα"
-            });
-            toast({
-              title: "Η τοποθεσία σας εντοπίστηκε!",
-              description: `Βρίσκεστε στη ${data.city || data.locality}`,
-            });
-          } catch (error) {
-            toast({
-              title: "Σφάλμα",
-              description: "Δεν μπόρεσε να εντοπιστεί η τοποθεσία σας",
-              variant: "destructive",
-            });
-          } finally {
-            setLoading(false);
-          }
-        },
-        (error) => {
-          setLoading(false);
-          toast({
-            title: "Σφάλμα τοποθεσίας",
-            description: "Παρακαλώ επιτρέψτε την πρόσβαση στην τοποθεσία σας",
-            variant: "destructive",
-          });
-        }
-      );
-    }
+    // Removed automatic geolocation - will be search-based instead
+    toast({
+      title: "Χρήση αναζήτησης",
+      description: "Χρησιμοποιήστε την αναζήτηση για να βρείτε μάγειρες στην περιοχή σας",
+    });
   };
 
   // Render different layouts based on selection
