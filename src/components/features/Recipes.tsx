@@ -63,7 +63,19 @@ export function Recipes() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setRecipes(data || []);
+      // Προσθέτουμε mock author για τις συνταγές και διορθώνουμε τύπους
+      const recipesWithAuthor = (data || []).map(recipe => ({
+        ...recipe,
+        ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
+        instructions: Array.isArray(recipe.instructions) ? recipe.instructions : [],
+        prep_time: recipe.prep_time || 0,
+        cook_time: recipe.cook_time || 0,
+        servings: recipe.servings || 1,
+        difficulty_level: recipe.difficulty_level || 1,
+        price: recipe.price || 0,
+        author: { display_name: 'Chef', verification_status: 'pending' }
+      }));
+      setRecipes(recipesWithAuthor);
     } catch (error) {
       console.error('Error loading recipes:', error);
       toast({

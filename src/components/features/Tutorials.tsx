@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Play, Clock, Star, Lock, Book, ChefHat, Cut, Flame } from 'lucide-react';
+import { Play, Clock, Star, Lock, Book, ChefHat, Scissors, Flame } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -26,7 +26,7 @@ interface Tutorial {
 
 const categories = [
   { id: 'all', name: 'Όλα', icon: Book },
-  { id: 'knife-skills', name: 'Τεχνικές κοπής', icon: Cut },
+  { id: 'knife-skills', name: 'Τεχνικές κοπής', icon: Scissors },
   { id: 'basic-techniques', name: 'Βασικές τεχνικές', icon: ChefHat },
   { id: 'cooking-methods', name: 'Μέθοδοι μαγειρέματος', icon: Flame },
 ];
@@ -104,8 +104,12 @@ export function Tutorials() {
         console.error('Error loading tutorials from database:', error);
       }
 
-      // Συνδυάζουμε όλα τα tutorials
-      const allTutorials = [...demoTutorials, ...(dbTutorials || [])];
+      // Συνδυάζουμε όλα τα tutorials - προσθέτουμε mock author για DB tutorials
+      const dbTutorialsWithAuthor = (dbTutorials || []).map(tutorial => ({
+        ...tutorial,
+        author: { display_name: 'Chef', verification_status: 'pending' }
+      }));
+      const allTutorials = [...demoTutorials, ...dbTutorialsWithAuthor];
       setTutorials(allTutorials);
     } catch (error) {
       console.error('Error loading tutorials:', error);

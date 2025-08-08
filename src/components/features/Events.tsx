@@ -62,7 +62,12 @@ export function Events() {
         .order('event_date', { ascending: true });
 
       if (error) throw error;
-      setEvents(data || []);
+      // Προσθέτουμε mock organizer για τα events
+      const eventsWithOrganizer = (data || []).map(event => ({
+        ...event,
+        organizer: { display_name: 'Organizer', verification_status: 'pending' }
+      }));
+      setEvents(eventsWithOrganizer);
     } catch (error) {
       console.error('Error loading events:', error);
       toast({
