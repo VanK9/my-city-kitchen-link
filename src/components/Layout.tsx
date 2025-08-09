@@ -12,19 +12,19 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ChefHat, Users, Calendar, BookOpen, Search, MapPin, Star, Zap, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-
 const Layout: React.FC = () => {
   const [currentSection, setCurrentSection] = useState('home');
-  const { user, profile } = useAuth();
+  const {
+    user,
+    profile
+  } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-
   const handleSearch = () => {
     if (searchQuery.trim()) {
       // Implement search functionality
       console.log('Searching for:', searchQuery);
     }
   };
-
   const renderContent = () => {
     switch (currentSection) {
       case 'recipes':
@@ -38,8 +38,7 @@ const Layout: React.FC = () => {
       case 'subscriptions':
         return <Subscriptions />;
       case 'profile':
-        return (
-          <div className="text-center py-12">
+        return <div className="text-center py-12">
             <div className="h-16 w-16 bg-gradient-to-br from-primary to-primary-glow rounded-xl flex items-center justify-center mx-auto mb-4 shadow-warm">
               <ChefHat className="h-8 w-8 text-primary-foreground" />
             </div>
@@ -48,22 +47,16 @@ const Layout: React.FC = () => {
               Εδώ θα εμφανίζεται η σελίδα διαχείρισης προφίλ
             </p>
             <Badge variant="secondary">Σύντομα Διαθέσιμο</Badge>
-          </div>
-        );
+          </div>;
       case 'home':
       default:
         if (user) {
           // Logged-in users see the customizable dashboard
-          return (
-            <CustomizableDashboard 
-              onNavigateToWorkSchedule={() => setCurrentSection('work-schedule')}
-            />
-          );
+          return <CustomizableDashboard onNavigateToWorkSchedule={() => setCurrentSection('work-schedule')} />;
         }
-        
+
         // Non-logged-in users see the marketing page
-        return (
-          <div className="space-y-12">
+        return <div className="space-y-12">
             {/* Hero Section */}
             <div className="text-center space-y-8">
               <div className="space-y-4">
@@ -80,13 +73,7 @@ const Layout: React.FC = () => {
 
               {/* Search Bar */}
               <div className="max-w-md mx-auto flex space-x-2">
-                <Input
-                  placeholder="Αναζήτηση συνταγών, εκδηλώσεων..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  className="flex-1"
-                />
+                <Input placeholder="Αναζήτηση συνταγών, εκδηλώσεων..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleSearch()} className="flex-1" />
                 <Button onClick={handleSearch} className="bg-primary hover:bg-primary/90">
                   <Search className="h-5 w-5" />
                 </Button>
@@ -95,10 +82,7 @@ const Layout: React.FC = () => {
 
             {/* Features Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card 
-                className="cursor-pointer hover:shadow-warm transition-all duration-300 border-2 hover:border-primary/20"
-                onClick={() => setCurrentSection('recipes')}
-              >
+              <Card className="cursor-pointer hover:shadow-warm transition-all duration-300 border-2 hover:border-primary/20" onClick={() => setCurrentSection('recipes')}>
                 <CardHeader className="text-center">
                   <div className="h-12 w-12 bg-gradient-to-br from-primary to-primary-glow rounded-xl flex items-center justify-center mx-auto mb-2 shadow-warm">
                     <ChefHat className="h-6 w-6 text-primary-foreground" />
@@ -106,16 +90,11 @@ const Layout: React.FC = () => {
                   <CardTitle>Συνταγές</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground text-center">
-                    Χιλιάδες συνταγές από επαγγελματίες μάγειρες. Δωρεάν και premium περιεχόμενο.
-                  </p>
+                  <p className="text-sm text-muted-foreground text-center">Εκατοντάδες συνταγές από επαγγελματίες μάγειρες. Δωρεάν και premium περιεχόμενο.</p>
                 </CardContent>
               </Card>
 
-              <Card 
-                className="cursor-pointer hover:shadow-warm transition-all duration-300 border-2 hover:border-primary/20"
-                onClick={() => setCurrentSection('events')}
-              >
+              <Card className="cursor-pointer hover:shadow-warm transition-all duration-300 border-2 hover:border-primary/20" onClick={() => setCurrentSection('events')}>
                 <CardHeader className="text-center">
                   <div className="h-12 w-12 bg-gradient-to-br from-primary to-primary-glow rounded-xl flex items-center justify-center mx-auto mb-2 shadow-warm">
                     <Calendar className="h-6 w-6 text-primary-foreground" />
@@ -129,10 +108,7 @@ const Layout: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <Card 
-                className="cursor-pointer hover:shadow-warm transition-all duration-300 border-2 hover:border-primary/20"
-                onClick={() => setCurrentSection('tutorials')}
-              >
+              <Card className="cursor-pointer hover:shadow-warm transition-all duration-300 border-2 hover:border-primary/20" onClick={() => setCurrentSection('tutorials')}>
                 <CardHeader className="text-center">
                   <div className="h-12 w-12 bg-gradient-to-br from-primary to-primary-glow rounded-xl flex items-center justify-center mx-auto mb-2 shadow-warm">
                     <BookOpen className="h-6 w-6 text-primary-foreground" />
@@ -146,10 +122,7 @@ const Layout: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <Card 
-                className="cursor-pointer hover:shadow-warm transition-all duration-300 border-2 hover:border-primary/20"
-                onClick={() => setCurrentSection('work-schedule')}
-              >
+              <Card className="cursor-pointer hover:shadow-warm transition-all duration-300 border-2 hover:border-primary/20" onClick={() => setCurrentSection('work-schedule')}>
                 <CardHeader className="text-center">
                   <div className="h-12 w-12 bg-gradient-to-br from-primary to-primary-glow rounded-xl flex items-center justify-center mx-auto mb-2 shadow-warm">
                     <Users className="h-6 w-6 text-primary-foreground" />
@@ -210,19 +183,14 @@ const Layout: React.FC = () => {
                 Εγγραφή Τώρα
               </Button>
             </div>
-          </div>
-        );
+          </div>;
     }
   };
-
-  return (
-    <div className="min-h-screen bg-gradient-warm">
+  return <div className="min-h-screen bg-gradient-warm">
       <Navigation currentSection={currentSection} onSectionChange={setCurrentSection} />
       <main className="container mx-auto px-4 py-8">
         {renderContent()}
       </main>
-    </div>
-  );
+    </div>;
 };
-
 export default Layout;
