@@ -5,6 +5,7 @@ import { Events } from './features/Events';
 import { Tutorials } from './features/Tutorials';
 import { Subscriptions } from './features/Subscriptions';
 import WorkSchedule from './features/WorkSchedule';
+import CustomizableDashboard from './dashboard/CustomizableDashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -51,6 +52,16 @@ const Layout: React.FC = () => {
         );
       case 'home':
       default:
+        if (user) {
+          // Logged-in users see the customizable dashboard
+          return (
+            <CustomizableDashboard 
+              onNavigateToWorkSchedule={() => setCurrentSection('work-schedule')}
+            />
+          );
+        }
+        
+        // Non-logged-in users see the marketing page
         return (
           <div className="space-y-12">
             {/* Hero Section */}
@@ -80,15 +91,6 @@ const Layout: React.FC = () => {
                   <Search className="h-5 w-5" />
                 </Button>
               </div>
-
-              {user && profile?.city && (
-                <div className="flex justify-center">
-                  <Badge variant="secondary" className="flex items-center space-x-2 px-4 py-2">
-                    <MapPin className="h-4 w-4" />
-                    <span>Τοποθεσία: {profile.city}, {profile.country}</span>
-                  </Badge>
-                </div>
-              )}
             </div>
 
             {/* Features Grid */}
@@ -199,17 +201,15 @@ const Layout: React.FC = () => {
             </div>
 
             {/* Call to Action */}
-            {!user && (
-              <div className="text-center bg-card rounded-2xl p-8 border shadow-elegant">
-                <h2 className="text-2xl font-bold mb-4">Είστε Έτοιμοι να Ξεκινήσετε;</h2>
-                <p className="text-muted-foreground mb-6">
-                  Εγγραφείτε σήμερα και αποκτήστε πρόσβαση σε όλες τις δυνατότητες του SpreadIt.
-                </p>
-                <Button size="lg" className="bg-primary hover:bg-primary/90">
-                  Εγγραφή Τώρα
-                </Button>
-              </div>
-            )}
+            <div className="text-center bg-card rounded-2xl p-8 border shadow-elegant">
+              <h2 className="text-2xl font-bold mb-4">Είστε Έτοιμοι να Ξεκινήσετε;</h2>
+              <p className="text-muted-foreground mb-6">
+                Εγγραφείτε σήμερα και αποκτήστε πρόσβαση σε όλες τις δυνατότητες του SpreadIt.
+              </p>
+              <Button size="lg" className="bg-primary hover:bg-primary/90">
+                Εγγραφή Τώρα
+              </Button>
+            </div>
           </div>
         );
     }
