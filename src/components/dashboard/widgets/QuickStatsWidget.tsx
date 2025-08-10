@@ -1,47 +1,63 @@
 import React from 'react';
-import { TrendingUp, Users, Star, Calendar } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { TrendingUp, Users, Calendar, Star } from 'lucide-react';
 
-const QuickStatsWidget: React.FC = () => {
+const QuickStatsWidget = () => {
   // Mock data - will be replaced with real data later
-  const stats = [
-    {
-      label: 'Συνταγές',
-      value: '24',
-      icon: Star,
-      trend: '+3 αυτό το μήνα'
-    },
-    {
-      label: 'Followers',
-      value: '156',
-      icon: Users,
-      trend: '+12 νέοι'
-    },
-    {
-      label: 'Events',
-      value: '8',
-      icon: Calendar,
-      trend: '3 επερχόμενα'
-    }
-  ];
+  const stats = {
+    totalRecipes: 15,
+    communityRank: 8,
+    upcomingEvents: 3,
+    achievementBadges: 5
+  };
 
   return (
-    <div className="space-y-3">
-      {stats.map((stat, index) => (
-        <div key={index} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-          <div className="flex items-center space-x-3">
-            <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
-              <stat.icon className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <div className="font-semibold">{stat.value}</div>
-              <div className="text-xs text-muted-foreground">{stat.label}</div>
-            </div>
-          </div>
-          <div className="text-xs text-muted-foreground text-right">
-            {stat.trend}
-          </div>
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="text-center">
+          <div className="text-2xl font-bold text-primary">{stats.totalRecipes}</div>
+          <div className="text-xs text-muted-foreground">Συνταγές</div>
         </div>
-      ))}
+        <div className="text-center">
+          <div className="text-2xl font-bold text-primary">#{stats.communityRank}</div>
+          <div className="text-xs text-muted-foreground">Κατάταξη</div>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">Εκδηλώσεις</span>
+          </div>
+          <Badge variant="secondary">{stats.upcomingEvents} νέες</Badge>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Star className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">Διακρίσεις</span>
+          </div>
+          <Badge variant="outline">{stats.achievementBadges} badges</Badge>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">Followers</span>
+          </div>
+          <Badge variant="outline">24 νέοι</Badge>
+        </div>
+      </div>
+
+      <div className="mt-4 p-2 bg-muted/30 rounded-lg">
+        <div className="flex items-center space-x-2">
+          <TrendingUp className="h-4 w-4 text-green-500" />
+          <span className="text-xs text-muted-foreground">
+            +12% αύξηση δραστηριότητας αυτή την εβδομάδα
+          </span>
+        </div>
+      </div>
     </div>
   );
 };
