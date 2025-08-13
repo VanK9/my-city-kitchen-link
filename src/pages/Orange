@@ -1,0 +1,167 @@
+import React from 'react';
+
+const tools = [
+  {
+    title: 'Συνταγές',
+    description: 'Εκατοντάδες συνταγές από επαγγελματίες μάγειρες.',
+    icon: '🍲',
+    link: '/recipes'
+  },
+  {
+    title: 'Εκδηλώσεις',
+    description: 'Workshops, διαγωνισμοί και networking events.',
+    icon: '🎉',
+    link: '/events'
+  },
+  {
+    title: 'Tutorials',
+    description: 'Μάθε νέες τεχνικές με βίντεο tutorials.',
+    icon: '📺',
+    link: '/tutorials'
+  },
+  {
+    title: 'Εργασία',
+    description: 'Καταγραφή ωρών και υπολογισμός μισθού.',
+    icon: '💼',
+    link: '/work'
+  }
+];
+
+export default function HomeOrange() {
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(180deg,#fff7f2 0%, #ffe1cc 80%)',
+      paddingBottom: '32px'
+    }}>
+      <header style={{
+        position: 'sticky',
+        top: 0,
+        background: '#fff7f2',
+        padding: '16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        boxShadow: '0 2px 8px rgba(245, 130, 49, 0.08)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{
+            fontSize: '2rem',
+            color: '#f58231'
+          }}>🍳</span>
+          <span style={{
+            fontWeight: 'bold',
+            color: '#f58231',
+            fontSize: '1.25rem'
+          }}>SpreadIt</span>
+        </div>
+        <div>
+          <button style={{
+            marginRight: '8px',
+            background: '#fff',
+            color: '#f58231',
+            border: '1px solid #f58231',
+            borderRadius: '8px',
+            padding: '6px 12px',
+            fontWeight: 'bold'
+          }}>Σύνδεση</button>
+          <button style={{
+            background: '#f58231',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '6px 12px',
+            fontWeight: 'bold'
+          }}>Εγγραφή</button>
+        </div>
+      </header>
+
+      <main style={{ padding: '20px 10px 0 10px' }}>
+        <h1 style={{
+          color: '#f58231',
+          fontSize: '2rem',
+          marginBottom: '8px',
+          textAlign: 'center',
+          fontWeight: 'bold'
+        }}>SpreadIt</h1>
+        <p style={{
+          color: '#444',
+          textAlign: 'center',
+          marginBottom: '20px'
+        }}>
+          Η κοινότητα που ενώνει επαγγελματίες μάγειρες και λάτρεις της μαγειρικής. Συνταγές, εκδηλώσεις, tutorials και εργαλεία σε μία πλατφόρμα.
+        </p>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          marginBottom: '24px',
+          justifyContent: 'center'
+        }}>
+          <input
+            type="text"
+            placeholder="Αναζήτηση συνταγών, εκδηλώσεων..."
+            style={{
+              flex: 1,
+              border: '1px solid #f58231',
+              borderRadius: '8px',
+              padding: '8px',
+              fontSize: '1rem',
+              minWidth: '0'
+            }}
+          />
+          <button style={{
+            background: '#f58231',
+            border: 'none',
+            borderRadius: '8px',
+            color: '#fff',
+            padding: '8px 12px',
+            fontWeight: 'bold'
+          }}>🔍</button>
+        </div>
+        
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '18px'
+        }}>
+          {tools.map((tool, idx) => (
+            <a href={tool.link} key={tool.title} style={{
+              background: '#fff',
+              borderRadius: '18px',
+              boxShadow: '0 2px 8px rgba(245, 130, 49, 0.09)',
+              padding: '16px',
+              textDecoration: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              transition: 'transform 0.1s',
+              color: '#111',
+              fontWeight: '500'
+            }}>
+              <span style={{
+                fontSize: '2.2rem',
+                background: '#ffe1cc',
+                borderRadius: '12px',
+                padding: '10px',
+                color: '#f58231'
+              }}>{tool.icon}</span>
+              <div>
+                <div style={{
+                  fontSize: '1.15rem',
+                  fontWeight: 'bold',
+                  color: '#f58231'
+                }}>{tool.title}</div>
+                <div style={{
+                  fontSize: '0.95rem',
+                  color: '#444',
+                  marginTop: '2px'
+                }}>{tool.description}</div>
+              </div>
+            </a>
+          ))}
+        </div>
+      </main>
+    </div>
+  );
+}
