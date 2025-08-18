@@ -1,2 +1,7 @@
-import HomeOrange from "./HomeOrange";
-export default HomeOrange;
+import Layout from "@/components/Layout";
+
+const Index = () => {
+  return <Layout />;
+};
+
+export default Index;
