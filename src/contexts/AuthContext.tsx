@@ -15,6 +15,16 @@ interface Profile {
   verified_by: string | null;
   verified_at: string | null;
   avatar_url: string | null;
+  is_verified?: boolean;
+  verification_type?: string;
+  verification_date?: string;
+  linkedin_url?: string;
+  portfolio_url?: string;
+  years_experience?: number;
+  skills?: string[];
+  certifications?: any;
+  verification_votes?: number;
+  verification_threshold?: number;
 }
 
 interface SubscriptionInfo {

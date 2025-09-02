@@ -6,6 +6,8 @@ import { Tutorials } from './features/Tutorials';
 import { Subscriptions } from './features/Subscriptions';
 import WorkSchedule from './features/WorkSchedule';
 import CustomizableDashboard from './dashboard/CustomizableDashboard';
+import ProfileManager from './profile/ProfileManager';
+import PeerVerification from './profile/PeerVerification';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -38,16 +40,12 @@ const Layout: React.FC = () => {
       case 'subscriptions':
         return <Subscriptions />;
       case 'profile':
-        return <div className="text-center py-12">
-            <div className="h-16 w-16 bg-gradient-to-br from-primary to-primary-glow rounded-xl flex items-center justify-center mx-auto mb-4 shadow-warm">
-              <ChefHat className="h-8 w-8 text-primary-foreground" />
-            </div>
-            <h3 className="text-2xl font-bold mb-2">Προφίλ Χρήστη</h3>
-            <p className="text-muted-foreground mb-4">
-              Εδώ θα εμφανίζεται η σελίδα διαχείρισης προφίλ
-            </p>
-            <Badge variant="secondary">Σύντομα Διαθέσιμο</Badge>
-          </div>;
+        return (
+          <div className="space-y-6">
+            <ProfileManager />
+            <PeerVerification />
+          </div>
+        );
       case 'home':
       default:
         if (user) {
