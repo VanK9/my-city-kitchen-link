@@ -1,73 +1,68 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Settings, Clock, BarChart3, MessageSquare } from 'lucide-react';
-import DashboardWidget, { WidgetConfig } from './DashboardWidget';
-import WorkScheduleQuickAccess from './widgets/WorkScheduleQuickAccess';
+import { Settings, Eye, EyeOff, RotateCcw } from 'lucide-react';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import DashboardWidget from './DashboardWidget';
 import QuickStatsWidget from './widgets/QuickStatsWidget';
+import WorkScheduleQuickAccess from './widgets/WorkScheduleQuickAccess';
 import CommunityFeedWidget from './widgets/CommunityFeedWidget';
 import { useDashboardPreferences } from '@/hooks/useDashboardPreferences';
 
-interface CustomizableDashboardProps {
-  onNavigateToWorkSchedule: () => void;
-}
+const availableWidgets = [
+  { id: 'quick-stats', name: 'Γρήγορα Στατιστικά', component: QuickStatsWidget },
+  { id: 'work-schedule', name: 'Πρόγραμμα Εργασίας', component: WorkScheduleQuickAccess },
+  { id: 'community-feed', name: 'Κοινότητα Feed', component: CommunityFeedWidget },
+];
 
-const CustomizableDashboard: React.FC<CustomizableDashboardProps> = ({
-  onNavigateToWorkSchedule
-}) => {
-  const { preferences, toggleWidgetVisibility } = useDashboardPreferences();
+const CustomizableDashboard: React.FC = () => {
+  const {
+    preferences,
+    toggleWidgetVisibility,
+    updateWidgetOrder,
+    resetToDefaults
+  } = useDashboardPreferences();
 
-  const availableWidgets: WidgetConfig[] = [
-    {
-      id: 'work-schedule',
-      title: 'Πρόγραμμα Εργασίας',
-      component: () => <WorkScheduleQuickAccess onNavigateToWorkSchedule={onNavigateToWorkSchedule} />,
-      icon: Clock,
-      size: 'medium',
-      category: 'work',
-      defaultVisible: true
-    },
-    {
-      id: 'quick-stats',
-      title: 'Γρήγορα Στατιστικά',
-      component: QuickStatsWidget,
-      icon: BarChart3,
-      size: 'medium',
-      category: 'overview',
-      defaultVisible: true
-    },
-    {
-      id: 'community-feed',
-      title: 'Community Feed',
-      component: CommunityFeedWidget,
-      icon: MessageSquare,
-      size: 'large',
-      category: 'social',
-      defaultVisible: true
+  const [isCustomizing, setIsCustomizing] = useState(false);
+
+  const handleDragStart = (e: React.DragEvent, widgetId: string) => {
+    e.dataTransfer.setData('widgetId', widgetId);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    const draggedWidgetId = e.dataTransfer.getData('widgetId');
+    const newOrder = [...preferences.widgetOrder];
+    const currentIndex = newOrder.indexOf(draggedWidgetId);
+    
+    if (currentIndex !== -1) {
+      newOrder.splice(currentIndex, 1);
+      newOrder.splice(targetIndex, 0, draggedWidgetId);
+      updateWidgetOrder(newOrder);
     }
-  ];
+  };
 
-  const visibleWidgets = availableWidgets.filter(widget => 
-    preferences.visibleWidgets.includes(widget.id)
+  const visibleWidgets = preferences.widgetOrder.filter(id => 
+    preferences.visibleWidgets.includes(id)
   );
-
-  const sortedWidgets = visibleWidgets.sort((a, b) => {
-    const aIndex = preferences.widgetOrder.indexOf(a.id);
-    const bIndex = preferences.widgetOrder.indexOf(b.id);
-    return aIndex - bIndex;
-  });
 
   return (
     <div className="space-y-6">
-      {/* Header with Settings */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Ο Χώρος σας</h2>
-          <p className="text-muted-foreground">Προσαρμόστε το dashboard σας</p>
-        </div>
-        
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">Πίνακας Ελέγχου</h2>
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" size="sm">
@@ -78,64 +73,90 @@ const CustomizableDashboard: React.FC<CustomizableDashboardProps> = ({
           <SheetContent>
             <SheetHeader>
               <SheetTitle>Προσαρμογή Dashboard</SheetTitle>
+              <SheetDescription>
+                Επιλέξτε ποια widgets θέλετε να εμφανίζονται στον πίνακα ελέγχου σας
+              </SheetDescription>
             </SheetHeader>
             <div className="space-y-6 mt-6">
-              <div>
-                <h3 className="font-semibold mb-3">Ορατά Widgets</h3>
-                <div className="space-y-3">
-                  {availableWidgets.map((widget) => (
-                    <div key={widget.id} className="flex items-center justify-between">
-                      <Label htmlFor={widget.id} className="flex items-center space-x-2">
-                        <widget.icon className="h-4 w-4" />
-                        <span>{widget.title}</span>
-                      </Label>
-                      <Switch
-                        id={widget.id}
-                        checked={preferences.visibleWidgets.includes(widget.id)}
-                        onCheckedChange={() => toggleWidgetVisibility(widget.id)}
-                      />
-                    </div>
-                  ))}
-                </div>
+              <div className="space-y-4">
+                {availableWidgets.map((widget) => (
+                  <div key={widget.id} className="flex items-center justify-between">
+                    <Label htmlFor={widget.id} className="flex items-center gap-2 cursor-pointer">
+                      {preferences.visibleWidgets.includes(widget.id) ? (
+                        <Eye className="h-4 w-4 text-primary" />
+                      ) : (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      )}
+                      {widget.name}
+                    </Label>
+                    <Switch
+                      id={widget.id}
+                      checked={preferences.visibleWidgets.includes(widget.id)}
+                      onCheckedChange={() => toggleWidgetVisibility(widget.id)}
+                    />
+                  </div>
+                ))}
+              </div>
+              
+              <div className="pt-4 border-t">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={resetToDefaults}
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Επαναφορά στις προεπιλογές
+                </Button>
               </div>
             </div>
           </SheetContent>
         </Sheet>
       </div>
 
-      {/* Prominent Work Schedule Access */}
-      <div className="bg-gradient-to-r from-primary/10 to-primary-glow/10 rounded-xl p-6 border-2 border-primary/20">
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <h3 className="text-xl font-bold flex items-center">
-              <Clock className="h-6 w-6 mr-2 text-primary" />
-              Καταγραφή Ωρών Εργασίας
-            </h3>
-            <p className="text-muted-foreground">
-              Παρακολουθήστε τις ώρες σας και υπολογίστε τα δεδουλευμένα
+      {visibleWidgets.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <p className="text-muted-foreground mb-4">
+              Δεν έχετε επιλέξει widgets για εμφάνιση
             </p>
-          </div>
-          <Button 
-            onClick={onNavigateToWorkSchedule}
-            size="lg"
-            className="bg-primary hover:bg-primary/90"
-          >
-            Άνοιγμα
-          </Button>
-        </div>
-      </div>
-
-      {/* Dashboard Widgets Grid */}
-      {sortedWidgets.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sortedWidgets.map((widget) => (
-            <DashboardWidget
-              key={widget.id}
-              widget={widget}
-              isVisible={preferences.visibleWidgets.includes(widget.id)}
-              onToggleVisibility={toggleWidgetVisibility}
-            />
-          ))}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Προσθήκη Widgets
+                </Button>
+              </SheetTrigger>
+            </Sheet>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {visibleWidgets.map((widgetId, index) => {
+            const widget = availableWidgets.find(w => w.id === widgetId);
+            if (!widget) return null;
+            
+            const WidgetComponent = widget.component;
+            
+            return (
+              <div
+                key={widgetId}
+                draggable={isCustomizing}
+                onDragStart={(e) => handleDragStart(e, widgetId)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, index)}
+                className={isCustomizing ? 'cursor-move' : ''}
+              >
+                <DashboardWidget
+                  id={widgetId}
+                  title={widget.name}
+                  onRemove={isCustomizing ? toggleWidgetVisibility : undefined}
+                  isDragging={false}
+                >
+                  <WidgetComponent />
+                </DashboardWidget>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

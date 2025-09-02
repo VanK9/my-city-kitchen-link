@@ -1,74 +1,81 @@
 import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, TrendingUp, Calendar } from 'lucide-react';
+import { Calendar, Clock, MapPin, Plus } from 'lucide-react';
 
-interface WorkScheduleQuickAccessProps {
-  onNavigateToWorkSchedule?: () => void;
-}
-
-const WorkScheduleQuickAccess: React.FC<WorkScheduleQuickAccessProps> = ({ 
-  onNavigateToWorkSchedule 
-}) => {
-  // Mock data - will be replaced with real data later
-  const weeklyHours = 38.5;
-  const monthlyEarnings = 1250;
-  const todayStatus: 'not_started' | 'working' | 'completed' = 'working';
-
-  const getStatusBadge = () => {
-    if (todayStatus === 'working') {
-      return <Badge variant="default" className="bg-green-500">Σε Εργασία</Badge>;
-    } else if (todayStatus === 'completed') {
-      return <Badge variant="secondary">Ολοκληρώθηκε</Badge>;
-    } else {
-      return <Badge variant="outline">Δεν Ξεκίνησε</Badge>;
+const WorkScheduleQuickAccess: React.FC = () => {
+  // Mock data - will be replaced with real data from Supabase
+  const upcomingShifts = [
+    {
+      id: 1,
+      date: 'Σήμερα',
+      time: '09:00 - 17:00',
+      location: 'Restaurant Plaza',
+      type: 'Πλήρης Απασχόληση'
+    },
+    {
+      id: 2,
+      date: 'Αύριο',
+      time: '18:00 - 23:00',
+      location: 'Cafe Marina',
+      type: 'Μερική Απασχόληση'
+    },
+    {
+      id: 3,
+      date: 'Παρασκευή',
+      time: '10:00 - 18:00',
+      location: 'Hotel Athena',
+      type: 'Πλήρης Απασχόληση'
     }
-  };
+  ];
 
   return (
-    <div className="space-y-4">
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="text-center">
-          <div className="text-2xl font-bold text-primary">{weeklyHours}h</div>
-          <div className="text-xs text-muted-foreground">Εβδομάδα</div>
-        </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold text-primary">€{monthlyEarnings}</div>
-          <div className="text-xs text-muted-foreground">Μήνας</div>
-        </div>
-      </div>
-
-      {/* Today Status */}
-      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-        <div className="flex items-center space-x-2">
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Σήμερα</span>
-        </div>
-        {getStatusBadge()}
-      </div>
-
-      {/* Quick Actions */}
-      <div className="space-y-2">
-        <Button 
-          onClick={onNavigateToWorkSchedule}
-          className="w-full bg-primary hover:bg-primary/90"
-          size="sm"
-        >
-          <Clock className="h-4 w-4 mr-2" />
-          Καταγραφή Ωρών
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Calendar className="h-5 w-5" />
+          Πρόγραμμα Εργασίας
+        </CardTitle>
+        <Button size="sm" variant="outline">
+          <Plus className="h-4 w-4 mr-1" />
+          Νέα Βάρδια
         </Button>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-full"
-          onClick={onNavigateToWorkSchedule}
-        >
-          <TrendingUp className="h-4 w-4 mr-2" />
-          Προβολή Αναφορών
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {upcomingShifts.map((shift) => (
+          <div 
+            key={shift.id} 
+            className="p-3 border rounded-lg hover:bg-muted/30 transition-colors cursor-pointer"
+          >
+            <div className="flex items-start justify-between">
+              <div className="space-y-1 flex-1">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">
+                    {shift.date}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">{shift.type}</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3 text-muted-foreground" />
+                    {shift.time}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3 text-muted-foreground" />
+                    {shift.location}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+        
+        <Button variant="link" className="w-full text-xs" size="sm">
+          Δείτε όλο το πρόγραμμα →
         </Button>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

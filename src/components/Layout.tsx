@@ -50,7 +50,7 @@ const Layout: React.FC = () => {
       default:
         if (user) {
           // Logged-in users see the customizable dashboard
-          return <CustomizableDashboard onNavigateToWorkSchedule={() => setCurrentSection('work-schedule')} />;
+          return <CustomizableDashboard />;
         }
 
         // Non-logged-in users see the marketing page
