@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
@@ -71,60 +71,117 @@ export type Database = {
         }
         Relationships: []
       }
+      peer_verifications: {
+        Row: {
+          comments: string | null
+          created_at: string
+          id: string
+          verification_type: string
+          verified_user_id: string
+          verifier_id: string
+        }
+        Insert: {
+          comments?: string | null
+          created_at?: string
+          id?: string
+          verification_type: string
+          verified_user_id: string
+          verifier_id: string
+        }
+        Update: {
+          comments?: string | null
+          created_at?: string
+          id?: string
+          verification_type?: string
+          verified_user_id?: string
+          verifier_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           bio: string | null
+          certifications: Json | null
           city: string | null
           country: string | null
           created_at: string | null
           display_name: string | null
           experience_years: number | null
           id: string
+          is_verified: boolean | null
+          linkedin_url: string | null
+          portfolio_url: string | null
+          skills: string[] | null
           specialty: string | null
           updated_at: string | null
           user_id: string | null
+          verification_date: string | null
           verification_status:
             | Database["public"]["Enums"]["verification_status"]
             | null
+          verification_threshold: number | null
+          verification_type: string | null
+          verification_votes: number | null
           verified_at: string | null
           verified_by: string | null
+          years_experience: number | null
         }
         Insert: {
           avatar_url?: string | null
           bio?: string | null
+          certifications?: Json | null
           city?: string | null
           country?: string | null
           created_at?: string | null
           display_name?: string | null
           experience_years?: number | null
           id?: string
+          is_verified?: boolean | null
+          linkedin_url?: string | null
+          portfolio_url?: string | null
+          skills?: string[] | null
           specialty?: string | null
           updated_at?: string | null
           user_id?: string | null
+          verification_date?: string | null
           verification_status?:
             | Database["public"]["Enums"]["verification_status"]
             | null
+          verification_threshold?: number | null
+          verification_type?: string | null
+          verification_votes?: number | null
           verified_at?: string | null
           verified_by?: string | null
+          years_experience?: number | null
         }
         Update: {
           avatar_url?: string | null
           bio?: string | null
+          certifications?: Json | null
           city?: string | null
           country?: string | null
           created_at?: string | null
           display_name?: string | null
           experience_years?: number | null
           id?: string
+          is_verified?: boolean | null
+          linkedin_url?: string | null
+          portfolio_url?: string | null
+          skills?: string[] | null
           specialty?: string | null
           updated_at?: string | null
           user_id?: string | null
+          verification_date?: string | null
           verification_status?:
             | Database["public"]["Enums"]["verification_status"]
             | null
+          verification_threshold?: number | null
+          verification_type?: string | null
+          verification_votes?: number | null
           verified_at?: string | null
           verified_by?: string | null
+          years_experience?: number | null
         }
         Relationships: []
       }
@@ -266,6 +323,33 @@ export type Database = {
           title?: string
           updated_at?: string | null
           video_url?: string | null
+        }
+        Relationships: []
+      }
+      user_badges: {
+        Row: {
+          awarded_by: string | null
+          awarded_date: string
+          badge_type: string
+          id: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          awarded_by?: string | null
+          awarded_date?: string
+          badge_type: string
+          id?: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          awarded_by?: string | null
+          awarded_date?: string
+          badge_type?: string
+          id?: string
+          reason?: string | null
+          user_id?: string
         }
         Relationships: []
       }
