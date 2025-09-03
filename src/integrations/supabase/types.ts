@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      employers: {
+        Row: {
+          address: string | null
+          company_name: string | null
+          created_at: string
+          email: string | null
+          employer_name: string
+          id: string
+          phone: string | null
+          tax_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          company_name?: string | null
+          created_at?: string
+          email?: string | null
+          employer_name: string
+          id?: string
+          phone?: string | null
+          tax_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          company_name?: string | null
+          created_at?: string
+          email?: string | null
+          employer_name?: string
+          id?: string
+          phone?: string | null
+          tax_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           approved_at: string | null
@@ -70,6 +109,74 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      monthly_summaries: {
+        Row: {
+          base_salary: number | null
+          bonuses: number | null
+          contract_id: string
+          created_at: string
+          holiday_pay: number | null
+          id: string
+          month: number
+          night_pay: number | null
+          overtime_pay: number | null
+          total_holiday_hours: number | null
+          total_night_hours: number | null
+          total_overtime_hours: number | null
+          total_regular_hours: number | null
+          total_salary: number | null
+          updated_at: string
+          user_id: string
+          year: number
+        }
+        Insert: {
+          base_salary?: number | null
+          bonuses?: number | null
+          contract_id: string
+          created_at?: string
+          holiday_pay?: number | null
+          id?: string
+          month: number
+          night_pay?: number | null
+          overtime_pay?: number | null
+          total_holiday_hours?: number | null
+          total_night_hours?: number | null
+          total_overtime_hours?: number | null
+          total_regular_hours?: number | null
+          total_salary?: number | null
+          updated_at?: string
+          user_id: string
+          year: number
+        }
+        Update: {
+          base_salary?: number | null
+          bonuses?: number | null
+          contract_id?: string
+          created_at?: string
+          holiday_pay?: number | null
+          id?: string
+          month?: number
+          night_pay?: number | null
+          overtime_pay?: number | null
+          total_holiday_hours?: number | null
+          total_night_hours?: number | null
+          total_overtime_hours?: number | null
+          total_regular_hours?: number | null
+          total_salary?: number | null
+          updated_at?: string
+          user_id?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_summaries_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "work_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       peer_verifications: {
         Row: {
@@ -352,6 +459,124 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      work_contracts: {
+        Row: {
+          base_amount: number
+          christmas_bonus: boolean | null
+          contract_type: string
+          created_at: string
+          easter_bonus: boolean | null
+          employer_id: string
+          end_date: string | null
+          holiday_bonus: boolean | null
+          id: string
+          is_active: boolean | null
+          night_rate: number | null
+          overtime_rate: number | null
+          start_date: string
+          updated_at: string
+          user_id: string
+          vacation_bonus: boolean | null
+        }
+        Insert: {
+          base_amount: number
+          christmas_bonus?: boolean | null
+          contract_type: string
+          created_at?: string
+          easter_bonus?: boolean | null
+          employer_id: string
+          end_date?: string | null
+          holiday_bonus?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          night_rate?: number | null
+          overtime_rate?: number | null
+          start_date: string
+          updated_at?: string
+          user_id: string
+          vacation_bonus?: boolean | null
+        }
+        Update: {
+          base_amount?: number
+          christmas_bonus?: boolean | null
+          contract_type?: string
+          created_at?: string
+          easter_bonus?: boolean | null
+          employer_id?: string
+          end_date?: string | null
+          holiday_bonus?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          night_rate?: number | null
+          overtime_rate?: number | null
+          start_date?: string
+          updated_at?: string
+          user_id?: string
+          vacation_bonus?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_contracts_employer_id_fkey"
+            columns: ["employer_id"]
+            isOneToOne: false
+            referencedRelation: "employers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_entries: {
+        Row: {
+          contract_id: string
+          created_at: string
+          daily_wage: number | null
+          entry_date: string
+          holiday_hours: number | null
+          id: string
+          night_hours: number | null
+          notes: string | null
+          overtime_hours: number | null
+          regular_hours: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          daily_wage?: number | null
+          entry_date: string
+          holiday_hours?: number | null
+          id?: string
+          night_hours?: number | null
+          notes?: string | null
+          overtime_hours?: number | null
+          regular_hours?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          daily_wage?: number | null
+          entry_date?: string
+          holiday_hours?: number | null
+          id?: string
+          night_hours?: number | null
+          notes?: string | null
+          overtime_hours?: number | null
+          regular_hours?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_entries_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "work_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
