@@ -5,10 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Euro, Calculator, FileText, Plus, Edit } from 'lucide-react';
+import { Calendar, Clock, Euro, Calculator, FileText, Plus, Edit, Building2, Users, ClipboardList } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { EmployerManagement } from '@/components/work/EmployerManagement';
+import { WorkContracts } from '@/components/work/WorkContracts';
+import { QuickWorkEntry } from '@/components/work/QuickWorkEntry';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface WorkScheduleEntry {
   id: string;
@@ -197,20 +201,54 @@ const WorkSchedule: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
-            Πρόγραμμα Εργασίας
+            Διαχείριση Εργασίας
           </h2>
           <p className="text-muted-foreground">
-            Καταγραφή ωρών και υπολογισμός αποδοχών σύμφωνα με τον Ελληνικό Νόμο
+            Καταγραφή ωρών, εργοδοτών και υπολογισμός αποδοχών σύμφωνα με τον Ελληνικό Νόμο
           </p>
         </div>
-        <Button onClick={() => setShowAddEntry(true)} className="bg-primary hover:bg-primary/90">
-          <Plus className="h-4 w-4 mr-2" />
-          Νέα Καταγραφή
-        </Button>
       </div>
 
-      {/* Month/Year Selector */}
-      <Card>
+      {/* Tabs for different work management sections */}
+      <Tabs defaultValue="quick-entry" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="quick-entry">
+            <ClipboardList className="h-4 w-4 mr-2" />
+            Γρήγορη Καταχώρηση
+          </TabsTrigger>
+          <TabsTrigger value="employers">
+            <Building2 className="h-4 w-4 mr-2" />
+            Εργοδότες
+          </TabsTrigger>
+          <TabsTrigger value="contracts">
+            <FileText className="h-4 w-4 mr-2" />
+            Συμβάσεις
+          </TabsTrigger>
+          <TabsTrigger value="history">
+            <Calendar className="h-4 w-4 mr-2" />
+            Ιστορικό
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Quick Work Entry Tab */}
+        <TabsContent value="quick-entry" className="space-y-4">
+          <QuickWorkEntry />
+        </TabsContent>
+
+        {/* Employer Management Tab */}
+        <TabsContent value="employers" className="space-y-4">
+          <EmployerManagement />
+        </TabsContent>
+
+        {/* Work Contracts Tab */}
+        <TabsContent value="contracts" className="space-y-4">
+          <WorkContracts />
+        </TabsContent>
+
+        {/* Work History Tab */}
+        <TabsContent value="history" className="space-y-4">
+          {/* Month/Year Selector */}
+          <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
             <Calendar className="h-5 w-5 mr-2" />
@@ -398,6 +436,8 @@ const WorkSchedule: React.FC = () => {
           )}
         </CardContent>
       </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
