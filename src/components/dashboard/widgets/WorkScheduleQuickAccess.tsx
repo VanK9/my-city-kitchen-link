@@ -1,79 +1,131 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, MapPin, Plus } from 'lucide-react';
+import { Clock, Calendar, Euro, TrendingUp, ChevronRight, Building2, FileText } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
+
+interface MonthlySummary {
+  total_hours: number;
+  total_salary: number;
+}
 
 const WorkScheduleQuickAccess: React.FC = () => {
-  // Mock data - will be replaced with real data from Supabase
-  const upcomingShifts = [
-    {
-      id: 1,
-      date: 'Σήμερα',
-      time: '09:00 - 17:00',
-      location: 'Restaurant Plaza',
-      type: 'Πλήρης Απασχόληση'
-    },
-    {
-      id: 2,
-      date: 'Αύριο',
-      time: '18:00 - 23:00',
-      location: 'Cafe Marina',
-      type: 'Μερική Απασχόληση'
-    },
-    {
-      id: 3,
-      date: 'Παρασκευή',
-      time: '10:00 - 18:00',
-      location: 'Hotel Athena',
-      type: 'Πλήρης Απασχόληση'
+  const { user } = useAuth();
+  const [monthlySummary, setMonthlySummary] = useState<MonthlySummary>({
+    total_hours: 0,
+    total_salary: 0
+  });
+  const [activeContracts, setActiveContracts] = useState<number>(0);
+
+  useEffect(() => {
+    if (user) {
+      loadSummaryData();
     }
-  ];
+  }, [user]);
+
+  const loadSummaryData = async () => {
+    if (!user) return;
+
+    try {
+      const currentMonth = new Date().getMonth() + 1;
+      const currentYear = new Date().getFullYear();
+
+      // Load monthly summaries for current month
+      const { data: summaries, error: summariesError } = await supabase
+        .from('monthly_summaries')
+        .select('total_regular_hours, total_overtime_hours, total_night_hours, total_holiday_hours, total_salary')
+        .eq('user_id', user.id)
+        .eq('month', currentMonth)
+        .eq('year', currentYear);
+
+      if (summariesError) throw summariesError;
+
+      // Calculate totals
+      const totals = summaries?.reduce((acc, summary) => ({
+        total_hours: acc.total_hours + 
+          (summary.total_regular_hours || 0) + 
+          (summary.total_overtime_hours || 0) + 
+          (summary.total_night_hours || 0) + 
+          (summary.total_holiday_hours || 0),
+        total_salary: acc.total_salary + (summary.total_salary || 0)
+      }), { total_hours: 0, total_salary: 0 }) || { total_hours: 0, total_salary: 0 };
+
+      setMonthlySummary(totals);
+
+      // Load active contracts count
+      const { count, error: contractsError } = await supabase
+        .from('work_contracts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_active', true);
+
+      if (contractsError) throw contractsError;
+      setActiveContracts(count || 0);
+
+    } catch (error) {
+      console.error('Error loading summary data:', error);
+    }
+  };
+
+  if (!user) {
+    return null;
+  }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Calendar className="h-5 w-5" />
-          Πρόγραμμα Εργασίας
+    <Card className="h-full">
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Εργασία
+          </span>
+          <Link to="/work-schedule">
+            <Button variant="ghost" size="sm">
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </Link>
         </CardTitle>
-        <Button size="sm" variant="outline">
-          <Plus className="h-4 w-4 mr-1" />
-          Νέα Βάρδια
-        </Button>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {upcomingShifts.map((shift) => (
-          <div 
-            key={shift.id} 
-            className="p-3 border rounded-lg hover:bg-muted/30 transition-colors cursor-pointer"
-          >
-            <div className="flex items-start justify-between">
-              <div className="space-y-1 flex-1">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">
-                    {shift.date}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground">{shift.type}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-3 w-3 text-muted-foreground" />
-                    {shift.time}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3 text-muted-foreground" />
-                    {shift.location}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+          <Link to="/work-schedule?tab=quick-entry">
+            <Button variant="outline" className="w-full justify-start" size="sm">
+              <Calendar className="h-4 w-4 mr-2" />
+              Καταχώρηση
+            </Button>
+          </Link>
+          <Link to="/work-schedule?tab=employers">
+            <Button variant="outline" className="w-full justify-start" size="sm">
+              <Building2 className="h-4 w-4 mr-2" />
+              Εργοδότες
+            </Button>
+          </Link>
+        </div>
         
-        <Button variant="link" className="w-full text-xs" size="sm">
-          Δείτε όλο το πρόγραμμα →
-        </Button>
+        <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Μήνας {format(new Date(), 'MM/yyyy')}</span>
+            <span className="font-semibold text-primary">€{monthlySummary.total_salary.toFixed(2)}</span>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Σύνολο Ωρών</span>
+            <span className="font-semibold">{monthlySummary.total_hours.toFixed(1)}h</span>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Ενεργές Συμβάσεις</span>
+            <span className="font-semibold">{activeContracts}</span>
+          </div>
+        </div>
+
+        <Link to="/work-schedule" className="block">
+          <Button className="w-full" size="sm">
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Προβολή Αναλυτικά
+          </Button>
+        </Link>
       </CardContent>
     </Card>
   );
