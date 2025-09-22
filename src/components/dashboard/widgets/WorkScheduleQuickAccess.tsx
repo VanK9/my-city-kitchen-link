@@ -91,13 +91,13 @@ const WorkScheduleQuickAccess: React.FC = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
-          <Link to="/work-schedule?tab=quick-entry">
+          <Link to="/work-schedule">
             <Button variant="outline" className="w-full justify-start" size="sm">
               <Calendar className="h-4 w-4 mr-2" />
               Καταχώρηση
             </Button>
           </Link>
-          <Link to="/work-schedule?tab=employers">
+          <Link to="/work-schedule">
             <Button variant="outline" className="w-full justify-start" size="sm">
               <Building2 className="h-4 w-4 mr-2" />
               Εργοδότες
