@@ -16,10 +16,12 @@ import DashboardWidget from './DashboardWidget';
 import QuickStatsWidget from './widgets/QuickStatsWidget';
 import WorkScheduleQuickAccess from './widgets/WorkScheduleQuickAccess';
 import CommunityFeedWidget from './widgets/CommunityFeedWidget';
+import QuickDailyEntry from './widgets/QuickDailyEntry';
 import { useDashboardPreferences } from '@/hooks/useDashboardPreferences';
 
 const availableWidgets = [
   { id: 'quick-stats', name: 'Γρήγορα Στατιστικά', component: QuickStatsWidget },
+  { id: 'quick-daily-entry', name: 'Γρήγορη Καταχώρηση', component: QuickDailyEntry },
   { id: 'work-schedule', name: 'Πρόγραμμα Εργασίας', component: WorkScheduleQuickAccess },
   { id: 'community-feed', name: 'Κοινότητα Feed', component: CommunityFeedWidget },
 ];

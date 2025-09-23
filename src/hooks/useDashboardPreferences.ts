@@ -7,8 +7,8 @@ export interface DashboardPreferences {
 
 export const useDashboardPreferences = () => {
   const [preferences, setPreferences] = useState<DashboardPreferences>({
-    visibleWidgets: ['work-schedule', 'quick-stats', 'community-feed'],
-    widgetOrder: ['work-schedule', 'quick-stats', 'community-feed']
+    visibleWidgets: ['quick-daily-entry', 'work-schedule', 'quick-stats', 'community-feed'],
+    widgetOrder: ['quick-daily-entry', 'work-schedule', 'quick-stats', 'community-feed']
   });
 
   // Load preferences from localStorage on mount
@@ -46,8 +46,8 @@ export const useDashboardPreferences = () => {
 
   const resetToDefaults = () => {
     setPreferences({
-      visibleWidgets: ['work-schedule', 'quick-stats', 'community-feed'],
-      widgetOrder: ['work-schedule', 'quick-stats', 'community-feed']
+      visibleWidgets: ['quick-daily-entry', 'work-schedule', 'quick-stats', 'community-feed'],
+      widgetOrder: ['quick-daily-entry', 'work-schedule', 'quick-stats', 'community-feed']
     });
   };
 
