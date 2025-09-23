@@ -204,7 +204,29 @@ const QuickDailyEntry: React.FC = () => {
   };
 
   if (!user) return null;
-  if (contracts.length === 0) return null;
+  
+  if (contracts.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Γρήγορη Καταχώρηση
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-4 space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Δεν έχετε ακόμα εργοδότες ή συμβάσεις
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Προσθέστε πρώτα έναν εργοδότη από τη σελίδα "Ωρολόγιο Πρόγραμμα"
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>

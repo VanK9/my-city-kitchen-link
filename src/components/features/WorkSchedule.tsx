@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Euro, Calculator, FileText, Plus, Edit, Building2, Users, ClipboardList } from 'lucide-react';
+import { Calendar, Clock, Euro, Calculator, FileText, Plus, Edit, Building2, Users, ClipboardList, Info } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +13,7 @@ import { EmployerManagement } from '@/components/work/EmployerManagement';
 import { WorkContracts } from '@/components/work/WorkContracts';
 import { QuickWorkEntry } from '@/components/work/QuickWorkEntry';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface WorkScheduleEntry {
   id: string;
@@ -232,6 +233,12 @@ const WorkSchedule: React.FC = () => {
 
         {/* Quick Work Entry Tab */}
         <TabsContent value="quick-entry" className="space-y-4">
+          <Alert className="mb-4">
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              Καταχωρήστε γρήγορα τις ώρες εργασίας σας. Πρώτα προσθέστε έναν εργοδότη και μια σύμβαση από τις αντίστοιχες καρτέλες.
+            </AlertDescription>
+          </Alert>
           <QuickWorkEntry />
         </TabsContent>
 
