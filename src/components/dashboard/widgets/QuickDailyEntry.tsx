@@ -44,7 +44,7 @@ const QuickDailyEntry: React.FC = () => {
         base_amount,
         contract_type,
         overtime_rate,
-        employers!work_contracts_employer_id_fkey (
+        employers (
           employer_name
         )
       `)
