@@ -11,7 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, FileText, Edit, Trash2, Euro } from 'lucide-react';
+import { Plus, FileText, Edit, Trash2, Euro, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -39,6 +39,7 @@ export const WorkContracts: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingContract, setEditingContract] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const form = useForm<ContractFormData>({
     resolver: zodResolver(contractSchema),
@@ -93,6 +94,7 @@ export const WorkContracts: React.FC = () => {
   const onSubmit = async (data: ContractFormData) => {
     if (!user) return;
 
+    setSaving(true);
     try {
       const contractData = {
         employer_id: data.employer_id,
@@ -134,6 +136,8 @@ export const WorkContracts: React.FC = () => {
     } catch (error) {
       console.error('Error saving contract:', error);
       toast.error('Σφάλμα κατά την αποθήκευση');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -249,14 +253,15 @@ export const WorkContracts: React.FC = () => {
                 </div>
 
                 <div className="flex gap-2 pt-4">
-                  <Button type="submit" className="flex-1">
+                  <Button type="submit" className="flex-1" disabled={saving}>
+                    {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                     {editingContract ? 'Ενημέρωση' : 'Δημιουργία'}
                   </Button>
                   <Button type="button" variant="outline" onClick={() => {
                     setIsDialogOpen(false);
                     setEditingContract(null);
                     form.reset();
-                  }}>
+                  }} disabled={saving}>
                     Ακύρωση
                   </Button>
                 </div>
@@ -267,9 +272,14 @@ export const WorkContracts: React.FC = () => {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <p className="text-muted-foreground">Φόρτωση...</p>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
         ) : contracts.length === 0 ? (
-          <p className="text-muted-foreground">Δεν έχετε προσθέσει συμβάσεις ακόμα</p>
+          <div className="text-center py-8">
+            <p className="text-muted-foreground mb-2">Δεν έχετε προσθέσει συμβάσεις ακόμα</p>
+            <p className="text-sm text-muted-foreground">Προσθέστε πρώτα έναν εργοδότη από την καρτέλα "Εργοδότες"</p>
+          </div>
         ) : (
           <div className="space-y-3">
             {contracts.map((contract) => (

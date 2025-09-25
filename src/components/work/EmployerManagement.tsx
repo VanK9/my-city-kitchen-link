@@ -9,7 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Building2, Edit, Trash2 } from 'lucide-react';
+import { Plus, Building2, Edit, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const employerSchema = z.object({
@@ -39,6 +39,7 @@ export const EmployerManagement: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEmployer, setEditingEmployer] = useState<Employer | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const form = useForm<EmployerFormData>({
     resolver: zodResolver(employerSchema),
@@ -78,6 +79,7 @@ export const EmployerManagement: React.FC = () => {
   const onSubmit = async (data: EmployerFormData) => {
     if (!user) return;
 
+    setSaving(true);
     try {
       if (editingEmployer) {
         const { error } = await supabase
@@ -111,6 +113,8 @@ export const EmployerManagement: React.FC = () => {
     } catch (error) {
       console.error('Error saving employer:', error);
       toast.error('Σφάλμα κατά την αποθήκευση');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -276,7 +280,9 @@ export const EmployerManagement: React.FC = () => {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <p className="text-muted-foreground">Φόρτωση...</p>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
         ) : employers.length === 0 ? (
           <p className="text-muted-foreground">Δεν έχετε προσθέσει εργοδότες ακόμα</p>
         ) : (

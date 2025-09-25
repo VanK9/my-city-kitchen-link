@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Clock, Calendar, Save, Calculator, Euro } from 'lucide-react';
+import { Clock, Calendar, Save, Calculator, Euro, Loader2, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { el } from 'date-fns/locale';
@@ -63,6 +64,7 @@ export const QuickWorkEntry: React.FC = () => {
   const [estimatedPay, setEstimatedPay] = useState<number>(0);
   const [monthlySummary, setMonthlySummary] = useState<MonthlySummary | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingContracts, setLoadingContracts] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -78,6 +80,7 @@ export const QuickWorkEntry: React.FC = () => {
   }, [selectedContract, entry.regular_hours, entry.overtime_hours, entry.night_hours, entry.holiday_hours]);
 
   const loadContracts = async () => {
+    setLoadingContracts(true);
     try {
       const { data, error } = await supabase
         .from('work_contracts')
@@ -105,6 +108,8 @@ export const QuickWorkEntry: React.FC = () => {
     } catch (error) {
       console.error('Error loading contracts:', error);
       toast.error('Σφάλμα κατά τη φόρτωση συμβάσεων');
+    } finally {
+      setLoadingContracts(false);
     }
   };
 
@@ -336,6 +341,19 @@ export const QuickWorkEntry: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {loadingContracts ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : contracts.length === 0 ? (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Δεν έχετε ακόμα ενεργές συμβάσεις. Προσθέστε πρώτα έναν εργοδότη και μια σύμβαση από τις αντίστοιχες καρτέλες.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Επιλογή Εργοδότη</Label>
@@ -440,6 +458,8 @@ export const QuickWorkEntry: React.FC = () => {
             <Save className="h-4 w-4 mr-2" />
             {loading ? 'Αποθήκευση...' : 'Αποθήκευση Καταχώρησης'}
           </Button>
+            </>
+          )}
         </CardContent>
       </Card>
 
