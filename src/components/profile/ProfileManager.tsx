@@ -7,16 +7,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { 
   User, CheckCircle, Award, Star, Users, 
-  Briefcase, Calendar, Link, Save, Shield
+  Briefcase, Calendar, Link, Save, Shield, Loader2
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const ProfileManager: React.FC = () => {
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
   const [verifications, setVerifications] = useState<any[]>([]);
   const [badges, setBadges] = useState<any[]>([]);
   
@@ -49,22 +51,29 @@ const ProfileManager: React.FC = () => {
 
   const loadVerificationsAndBadges = async () => {
     if (!user) return;
-
-    // Load verifications
-    const { data: verificationsData } = await supabase
-      .from('peer_verifications')
-      .select('*, verifier:profiles!peer_verifications_verifier_id_fkey(display_name)')
-      .eq('verified_user_id', user.id);
     
-    if (verificationsData) setVerifications(verificationsData);
+    setLoadingData(true);
+    try {
+      // Load verifications
+      const { data: verificationsData } = await supabase
+        .from('peer_verifications')
+        .select('*, verifier:profiles!peer_verifications_verifier_id_fkey(display_name)')
+        .eq('verified_user_id', user.id);
+      
+      if (verificationsData) setVerifications(verificationsData);
 
-    // Load badges
-    const { data: badgesData } = await supabase
-      .from('user_badges')
-      .select('*')
-      .eq('user_id', user.id);
-    
-    if (badgesData) setBadges(badgesData);
+      // Load badges
+      const { data: badgesData } = await supabase
+        .from('user_badges')
+        .select('*')
+        .eq('user_id', user.id);
+      
+      if (badgesData) setBadges(badgesData);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoadingData(false);
+    }
   };
 
   const handleSave = async () => {
@@ -230,7 +239,11 @@ const ProfileManager: React.FC = () => {
             disabled={loading}
             className="w-full"
           >
-            <Save className="h-4 w-4 mr-2" />
+            {loading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
             {loading ? 'Αποθήκευση...' : 'Αποθήκευση Αλλαγών'}
           </Button>
         </CardContent>

@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PlayCircle, Clock, Bookmark, ChefHat } from "lucide-react";
+import { PlayCircle, Clock, Bookmark, ChefHat, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const TutorialsPage = () => {
   const [tutorials, setTutorials] = useState<any[]>([]);
@@ -42,7 +43,13 @@ const TutorialsPage = () => {
   };
 
   if (isLoading) {
-    return <div className="p-6">Φόρτωση tutorials...</div>;
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -106,13 +113,15 @@ const TutorialsPage = () => {
         </div>
 
         {tutorials.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">📚</div>
-            <p className="text-xl text-muted-foreground mb-2">Σύντομα διαθέσιμα!</p>
-            <p className="text-sm text-muted-foreground">
-              Τα μαγειρικά tutorials θα είναι διαθέσιμα σύντομα
-            </p>
-          </div>
+          <Alert className="max-w-2xl mx-auto">
+            <AlertDescription className="text-center py-4">
+              <div className="text-4xl mb-4">📚</div>
+              <p className="text-lg font-semibold mb-2">Σύντομα διαθέσιμα!</p>
+              <p className="text-sm">
+                Τα μαγειρικά tutorials θα είναι διαθέσιμα σύντομα
+              </p>
+            </AlertDescription>
+          </Alert>
         )}
 
         {/* Basic Tutorials Preview */}

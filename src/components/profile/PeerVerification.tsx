@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { UserCheck, Search, Award } from 'lucide-react';
+import { UserCheck, Search, Award, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface UserProfile {
   user_id: string;
@@ -134,7 +135,11 @@ const PeerVerification: React.FC = () => {
               onKeyPress={(e) => e.key === 'Enter' && searchUsers()}
             />
             <Button onClick={searchUsers} disabled={loading}>
-              <Search className="h-4 w-4 mr-2" />
+              {loading ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Search className="h-4 w-4 mr-2" />
+              )}
               Αναζήτηση
             </Button>
           </div>
@@ -199,9 +204,19 @@ const PeerVerification: React.FC = () => {
           )}
 
           {users.length === 0 && searchTerm && !loading && (
-            <p className="text-center text-muted-foreground py-4">
-              Δεν βρέθηκαν χρήστες με αυτά τα κριτήρια
-            </p>
+            <Alert>
+              <AlertDescription>
+                Δεν βρέθηκαν χρήστες με αυτά τα κριτήρια
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {!searchTerm && (
+            <Alert>
+              <AlertDescription>
+                Χρησιμοποιήστε την αναζήτηση για να βρείτε συναδέλφους και να τους επαληθεύσετε
+              </AlertDescription>
+            </Alert>
           )}
         </CardContent>
       </Card>
