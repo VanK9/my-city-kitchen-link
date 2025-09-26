@@ -292,57 +292,210 @@ export type Database = {
         }
         Relationships: []
       }
+      recipe_images: {
+        Row: {
+          caption: string | null
+          created_at: string
+          display_order: number | null
+          id: string
+          image_url: string
+          is_primary: boolean | null
+          recipe_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url: string
+          is_primary?: boolean | null
+          recipe_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url?: string
+          is_primary?: boolean | null
+          recipe_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_images_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recipe_purchases: {
+        Row: {
+          buyer_id: string
+          id: string
+          purchased_at: string
+          recipe_id: string
+          spread_amount: number
+        }
+        Insert: {
+          buyer_id: string
+          id?: string
+          purchased_at?: string
+          recipe_id: string
+          spread_amount: number
+        }
+        Update: {
+          buyer_id?: string
+          id?: string
+          purchased_at?: string
+          recipe_id?: string
+          spread_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_purchases_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recipe_saves: {
+        Row: {
+          id: string
+          notes: string | null
+          recipe_id: string
+          saved_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          notes?: string | null
+          recipe_id: string
+          saved_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          notes?: string | null
+          recipe_id?: string
+          saved_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_saves_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recipes: {
         Row: {
           author_id: string | null
+          calories: number | null
+          carbs: number | null
           cook_time: number | null
           created_at: string | null
+          cuisine_type: string | null
           description: string | null
+          dietary_info: string[] | null
           difficulty_level: number | null
+          fats: number | null
+          fiber: number | null
           id: string
           image_url: string | null
           ingredients: Json
           instructions: Json
           is_premium: boolean | null
+          meal_type: string | null
           prep_time: number | null
           price: number | null
+          protein: number | null
+          rating: number | null
+          rating_count: number | null
           servings: number | null
+          sharing_type: string | null
+          spread_price: number | null
+          tags: string[] | null
+          tips: string | null
           title: string
+          total_saves: number | null
+          total_views: number | null
           updated_at: string | null
+          video_url: string | null
         }
         Insert: {
           author_id?: string | null
+          calories?: number | null
+          carbs?: number | null
           cook_time?: number | null
           created_at?: string | null
+          cuisine_type?: string | null
           description?: string | null
+          dietary_info?: string[] | null
           difficulty_level?: number | null
+          fats?: number | null
+          fiber?: number | null
           id?: string
           image_url?: string | null
           ingredients: Json
           instructions: Json
           is_premium?: boolean | null
+          meal_type?: string | null
           prep_time?: number | null
           price?: number | null
+          protein?: number | null
+          rating?: number | null
+          rating_count?: number | null
           servings?: number | null
+          sharing_type?: string | null
+          spread_price?: number | null
+          tags?: string[] | null
+          tips?: string | null
           title: string
+          total_saves?: number | null
+          total_views?: number | null
           updated_at?: string | null
+          video_url?: string | null
         }
         Update: {
           author_id?: string | null
+          calories?: number | null
+          carbs?: number | null
           cook_time?: number | null
           created_at?: string | null
+          cuisine_type?: string | null
           description?: string | null
+          dietary_info?: string[] | null
           difficulty_level?: number | null
+          fats?: number | null
+          fiber?: number | null
           id?: string
           image_url?: string | null
           ingredients?: Json
           instructions?: Json
           is_premium?: boolean | null
+          meal_type?: string | null
           prep_time?: number | null
           price?: number | null
+          protein?: number | null
+          rating?: number | null
+          rating_count?: number | null
           servings?: number | null
+          sharing_type?: string | null
+          spread_price?: number | null
+          tags?: string[] | null
+          tips?: string | null
           title?: string
+          total_saves?: number | null
+          total_views?: number | null
           updated_at?: string | null
+          video_url?: string | null
         }
         Relationships: []
       }
@@ -456,6 +609,36 @@ export type Database = {
           badge_type?: string
           id?: string
           reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_spreads: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          total_earned: number | null
+          total_spent: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_earned?: number | null
+          total_spent?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_earned?: number | null
+          total_spent?: number | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []

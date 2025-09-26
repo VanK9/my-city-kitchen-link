@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Navigation from './Navigation';
-import { Recipes } from './features/Recipes';
+import { EnhancedRecipes } from './features/EnhancedRecipes';
 import { Events } from './features/Events';
 import { Tutorials } from './features/Tutorials';
 import { Subscriptions } from './features/Subscriptions';
@@ -30,7 +30,7 @@ const Layout: React.FC = () => {
   const renderContent = () => {
     switch (currentSection) {
       case 'recipes':
-        return <Recipes />;
+        return <EnhancedRecipes />;
       case 'events':
         return <Events />;
       case 'tutorials':
