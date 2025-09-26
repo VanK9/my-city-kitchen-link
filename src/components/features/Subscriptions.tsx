@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Star, Crown, Zap, Shield, Heart } from 'lucide-react';
+import { CheckCircle, Star, Crown, Zap, Shield, Heart, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -235,7 +235,7 @@ export function Subscriptions() {
                 >
                   {isLoading ? (
                     <div className="flex items-center space-x-2">
-                      <div className="animate-spin h-4 w-4 border-b-2 border-current rounded-full" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                       <span>Φόρτωση...</span>
                     </div>
                   ) : isCurrent ? (

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Euro, Calculator, FileText, Plus, Edit, Building2, Users, ClipboardList, Info } from 'lucide-react';
+import { Calendar, Clock, Euro, Calculator, FileText, Plus, Edit, Building2, Users, ClipboardList, Info, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -56,6 +56,7 @@ const WorkSchedule: React.FC = () => {
   const [showAddEntry, setShowAddEntry] = useState(false);
   const [baseSalary, setBaseSalary] = useState<number>(800); // Greek minimum wage
   const [paymentType, setPaymentType] = useState<'monthly' | 'daily'>('monthly');
+  const [loading, setLoading] = useState(false);
 
   // Greek employment law constants
   const GREEK_LAW = {
@@ -132,6 +133,7 @@ const WorkSchedule: React.FC = () => {
   const loadWorkEntries = async () => {
     if (!user) return;
 
+    setLoading(true);
     try {
       // This would be a real table in production
       // For now, using mock data
@@ -172,6 +174,8 @@ const WorkSchedule: React.FC = () => {
         description: "Δεν ήταν δυνατή η φόρτωση των δεδομένων εργασίας.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -406,7 +410,11 @@ const WorkSchedule: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {workEntries.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : workEntries.length === 0 ? (
             <div className="text-center py-8">
               <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">Δεν βρέθηκαν καταγραφές για την επιλεγμένη περίοδο.</p>
