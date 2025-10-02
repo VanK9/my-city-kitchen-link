@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { UserCheck, Search, Award, Loader2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { UserCheck, Search, Award, Loader2, Shield, Users } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -19,17 +20,33 @@ interface UserProfile {
   years_experience: number;
 }
 
+interface Verification {
+  id: string;
+  verifier_id: string;
+  verification_type: string;
+  comments: string;
+  created_at: string;
+  verifier?: {
+    display_name: string;
+    specialty: string;
+  };
+}
+
 const PeerVerification: React.FC = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(false);
   const [verifiedUsers, setVerifiedUsers] = useState<Set<string>>(new Set());
+  const [myVerifications, setMyVerifications] = useState<Verification[]>([]);
+  const [verificationStats, setVerificationStats] = useState({ given: 0, received: 0 });
 
   useEffect(() => {
     if (user) {
       loadVerifiedUsers();
+      loadMyVerifications();
+      loadVerificationStats();
     }
   }, [user]);
 
@@ -44,6 +61,54 @@ const PeerVerification: React.FC = () => {
     if (data) {
       setVerifiedUsers(new Set(data.map(v => v.verified_user_id)));
     }
+  };
+
+  const loadMyVerifications = async () => {
+    if (!user) return;
+
+    const { data } = await supabase
+      .from('peer_verifications')
+      .select('*')
+      .eq('verified_user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (data) {
+      // Fetch verifier info for each verification
+      const verificationsWithVerifiers = await Promise.all(
+        data.map(async (verification) => {
+          const { data: verifierData } = await supabase
+            .from('profiles')
+            .select('display_name, specialty')
+            .eq('user_id', verification.verifier_id)
+            .maybeSingle();
+          
+          return {
+            ...verification,
+            verifier: verifierData || { display_name: 'Άγνωστος', specialty: '' }
+          };
+        })
+      );
+      setMyVerifications(verificationsWithVerifiers);
+    }
+  };
+
+  const loadVerificationStats = async () => {
+    if (!user) return;
+
+    const { count: given } = await supabase
+      .from('peer_verifications')
+      .select('*', { count: 'exact', head: true })
+      .eq('verifier_id', user.id);
+
+    const { count: received } = await supabase
+      .from('peer_verifications')
+      .select('*', { count: 'exact', head: true })
+      .eq('verified_user_id', user.id);
+
+    setVerificationStats({
+      given: given || 0,
+      received: received || 0
+    });
   };
 
   const searchUsers = async () => {
@@ -102,6 +167,7 @@ const PeerVerification: React.FC = () => {
         description: 'Η επαλήθευση καταχωρήθηκε'
       });
       setVerifiedUsers(prev => new Set([...prev, verifiedUserId]));
+      loadVerificationStats();
     }
   };
 
@@ -119,7 +185,59 @@ const PeerVerification: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Επαληθεύσεις που έδωσα</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{verificationStats.given}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Επαληθεύσεις που έλαβα</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{verificationStats.received}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Χρειάζεστε 5 για πλήρη επαλήθευση
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Κατάσταση</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {profile?.is_verified ? (
+              <Badge variant="default" className="text-sm">
+                <Award className="h-4 w-4 mr-1" />
+                Επαληθευμένος
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="text-sm">
+                Σε αναμονή ({verificationStats.received}/5)
+              </Badge>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="search" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="search">
+            <Search className="h-4 w-4 mr-2" />
+            Αναζήτηση Συναδέλφων
+          </TabsTrigger>
+          <TabsTrigger value="my-verifications">
+            <Shield className="h-4 w-4 mr-2" />
+            Οι Επαληθεύσεις μου
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="search" className="mt-4">
+          <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <UserCheck className="h-5 w-5" />
@@ -220,6 +338,67 @@ const PeerVerification: React.FC = () => {
           )}
         </CardContent>
       </Card>
+    </TabsContent>
+
+    <TabsContent value="my-verifications" className="mt-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Επαληθεύσεις που έχω λάβει
+          </CardTitle>
+          <CardDescription>
+            Προβολή όλων των επαληθεύσεων από συναδέλφους
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {myVerifications.length > 0 ? (
+            <div className="space-y-3">
+              {myVerifications.map((verification) => (
+                <div
+                  key={verification.id}
+                  className="p-4 border rounded-lg bg-muted/30"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">
+                          {verification.verifier?.display_name}
+                        </span>
+                        <Badge variant="outline" className="text-xs">
+                          {verification.verification_type}
+                        </Badge>
+                      </div>
+                      {verification.verifier?.specialty && (
+                        <p className="text-sm text-muted-foreground">
+                          {verification.verifier.specialty}
+                        </p>
+                      )}
+                      {verification.comments && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          {verification.comments}
+                        </p>
+                      )}
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {new Date(verification.created_at).toLocaleDateString('el-GR')}
+                      </p>
+                    </div>
+                    <UserCheck className="h-5 w-5 text-primary" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <Alert>
+              <AlertDescription>
+                Δεν έχετε λάβει επαληθεύσεις ακόμα. Συμπληρώστε το προφίλ σας και συνδεθείτε με συναδέλφους!
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+    </TabsContent>
+  </Tabs>
     </div>
   );
 };

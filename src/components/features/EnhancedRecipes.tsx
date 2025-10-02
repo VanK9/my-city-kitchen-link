@@ -200,17 +200,39 @@ export const EnhancedRecipes = () => {
         const savedIds = saves?.map(s => s.recipe_id) || [];
         const purchasedIds = purchases?.map(p => p.recipe_id) || [];
 
-      setRecipes(data.map(recipe => ({
-        ...recipe,
-        sharing_type: recipe.sharing_type as 'private' | 'public' | 'paid',
-        is_saved: savedIds.includes(recipe.id),
-        is_purchased: purchasedIds.includes(recipe.id)
-      })));
-    } else {
-      setRecipes((data || []).map(recipe => ({
-        ...recipe,
-        sharing_type: recipe.sharing_type as 'private' | 'public' | 'paid'
-      })));
+        // Fetch author info for each recipe
+        const recipesWithAuthors = await Promise.all(
+          data.map(async (recipe) => {
+            if (recipe.author_id) {
+              const { data: authorData } = await supabase
+                .from('profiles')
+                .select('display_name, avatar_url')
+                .eq('user_id', recipe.author_id)
+                .maybeSingle();
+              
+              return {
+                ...recipe,
+                sharing_type: recipe.sharing_type as 'private' | 'public' | 'paid',
+                is_saved: savedIds.includes(recipe.id),
+                is_purchased: purchasedIds.includes(recipe.id),
+                author: authorData || undefined
+              };
+            }
+            return {
+              ...recipe,
+              sharing_type: recipe.sharing_type as 'private' | 'public' | 'paid',
+              is_saved: savedIds.includes(recipe.id),
+              is_purchased: purchasedIds.includes(recipe.id)
+            };
+          })
+        );
+
+        setRecipes(recipesWithAuthors);
+      } else if (data) {
+        setRecipes((data || []).map(recipe => ({
+          ...recipe,
+          sharing_type: recipe.sharing_type as 'private' | 'public' | 'paid'
+        })));
       }
     } catch (error) {
       console.error('Error loading recipes:', error);
@@ -1091,6 +1113,191 @@ export const EnhancedRecipes = () => {
             </Card>
           ))}
         </div>
+      )}
+
+      {/* Recipe Detail Dialog */}
+      {selectedRecipe && (
+        <Dialog open={!!selectedRecipe} onOpenChange={() => setSelectedRecipe(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl">{selectedRecipe.title}</DialogTitle>
+              <DialogDescription>{selectedRecipe.description}</DialogDescription>
+            </DialogHeader>
+
+            {selectedRecipe.images && selectedRecipe.images.length > 0 && (
+              <div className="relative h-64 rounded-lg overflow-hidden">
+                <img
+                  src={selectedRecipe.images.find(img => img.is_primary)?.image_url || selectedRecipe.images[0].image_url}
+                  alt={selectedRecipe.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
+            <Tabs defaultValue="ingredients" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="ingredients">Υλικά</TabsTrigger>
+                <TabsTrigger value="instructions">Οδηγίες</TabsTrigger>
+                <TabsTrigger value="nutrition">Διατροφή</TabsTrigger>
+                <TabsTrigger value="info">Πληροφορίες</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="ingredients" className="space-y-2">
+                <ScrollArea className="h-[300px] w-full rounded-md border p-4">
+                  <ul className="space-y-2">
+                    {Array.isArray(selectedRecipe.ingredients) && selectedRecipe.ingredients.map((ingredient: any, i: number) => (
+                      <li key={i} className="flex items-start">
+                        <span className="mr-2">•</span>
+                        <span>{typeof ingredient === 'string' ? ingredient : ingredient.item || ingredient}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </ScrollArea>
+              </TabsContent>
+
+              <TabsContent value="instructions" className="space-y-2">
+                <ScrollArea className="h-[300px] w-full rounded-md border p-4">
+                  <ol className="space-y-4">
+                    {Array.isArray(selectedRecipe.instructions) && selectedRecipe.instructions.map((instruction: any, i: number) => (
+                      <li key={i} className="flex items-start">
+                        <span className="mr-3 font-semibold text-primary">{i + 1}.</span>
+                        <span>{typeof instruction === 'string' ? instruction : instruction.instruction || instruction}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </ScrollArea>
+              </TabsContent>
+
+              <TabsContent value="nutrition" className="space-y-4">
+                {selectedRecipe.calories ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center gap-2 p-3 border rounded-lg">
+                      <Flame className="h-5 w-5 text-orange-500" />
+                      <div>
+                        <div className="text-sm text-muted-foreground">Θερμίδες</div>
+                        <div className="text-lg font-semibold">{selectedRecipe.calories}</div>
+                      </div>
+                    </div>
+                    {selectedRecipe.protein && (
+                      <div className="flex items-center gap-2 p-3 border rounded-lg">
+                        <Apple className="h-5 w-5 text-red-500" />
+                        <div>
+                          <div className="text-sm text-muted-foreground">Πρωτεΐνη</div>
+                          <div className="text-lg font-semibold">{selectedRecipe.protein}γρ</div>
+                        </div>
+                      </div>
+                    )}
+                    {selectedRecipe.carbs && (
+                      <div className="flex items-center gap-2 p-3 border rounded-lg">
+                        <Wheat className="h-5 w-5 text-yellow-500" />
+                        <div>
+                          <div className="text-sm text-muted-foreground">Υδατάνθρακες</div>
+                          <div className="text-lg font-semibold">{selectedRecipe.carbs}γρ</div>
+                        </div>
+                      </div>
+                    )}
+                    {selectedRecipe.fats && (
+                      <div className="flex items-center gap-2 p-3 border rounded-lg">
+                        <Salad className="h-5 w-5 text-green-500" />
+                        <div>
+                          <div className="text-sm text-muted-foreground">Λιπαρά</div>
+                          <div className="text-lg font-semibold">{selectedRecipe.fats}γρ</div>
+                        </div>
+                      </div>
+                    )}
+                    {selectedRecipe.fiber && (
+                      <div className="flex items-center gap-2 p-3 border rounded-lg">
+                        <Wheat className="h-5 w-5 text-green-600" />
+                        <div>
+                          <div className="text-sm text-muted-foreground">Φυτικές Ίνες</div>
+                          <div className="text-lg font-semibold">{selectedRecipe.fiber}γρ</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Δεν υπάρχουν διαθέσιμες διατροφικές πληροφορίες
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="info" className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 border rounded-lg">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Clock className="h-4 w-4" />
+                      <span className="text-sm">Προετοιμασία</span>
+                    </div>
+                    <div className="text-lg font-semibold">{selectedRecipe.prep_time} λεπτά</div>
+                  </div>
+                  <div className="p-3 border rounded-lg">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Clock className="h-4 w-4" />
+                      <span className="text-sm">Μαγείρεμα</span>
+                    </div>
+                    <div className="text-lg font-semibold">{selectedRecipe.cook_time} λεπτά</div>
+                  </div>
+                  <div className="p-3 border rounded-lg">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Users className="h-4 w-4" />
+                      <span className="text-sm">Μερίδες</span>
+                    </div>
+                    <div className="text-lg font-semibold">{selectedRecipe.servings}</div>
+                  </div>
+                  <div className="p-3 border rounded-lg">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <ChefHat className="h-4 w-4" />
+                      <span className="text-sm">Δυσκολία</span>
+                    </div>
+                    <div className="text-lg font-semibold">{getDifficultyLabel(selectedRecipe.difficulty_level || 1)}</div>
+                  </div>
+                </div>
+
+                {selectedRecipe.tips && (
+                  <div className="p-4 border rounded-lg bg-muted/50">
+                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                      <Star className="h-4 w-4 text-yellow-500" />
+                      Συμβουλές
+                    </h4>
+                    <p className="text-sm">{selectedRecipe.tips}</p>
+                  </div>
+                )}
+
+                {selectedRecipe.tags && selectedRecipe.tags.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold mb-2">Ετικέτες</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedRecipe.tags.map((tag, i) => (
+                        <Badge key={i} variant="secondary">{tag}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {selectedRecipe.video_url && (
+                  <div>
+                    <h4 className="font-semibold mb-2">Βίντεο</h4>
+                    <a
+                      href={selectedRecipe.video_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Δείτε το βίντεο της συνταγής
+                    </a>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setSelectedRecipe(null)}>
+                Κλείσιμο
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

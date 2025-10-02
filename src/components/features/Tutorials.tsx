@@ -3,7 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Play, Clock, Star, Lock, Book, ChefHat, Scissors, Flame } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Play, Clock, Star, Lock, Book, ChefHat, Scissors, Flame, Plus, Video, Save, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -78,8 +84,21 @@ export function Tutorials() {
   const [tutorials, setTutorials] = useState<Tutorial[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const { user, subscription } = useAuth();
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [selectedTutorial, setSelectedTutorial] = useState<Tutorial | null>(null);
+  const { user, subscription, profile } = useAuth();
   const { toast } = useToast();
+
+  const [newTutorial, setNewTutorial] = useState({
+    title: '',
+    description: '',
+    category: 'basic-techniques',
+    difficulty_level: 1,
+    duration: 10,
+    is_free: false,
+    video_url: '',
+    content: '',
+  });
 
   useEffect(() => {
     loadTutorials();
@@ -94,7 +113,7 @@ export function Tutorials() {
         video_url: '',
       })) as Tutorial[];
 
-      // Προσπαθούμε να φορτώσουμε και τα database tutorials
+      // Φορτώνουμε DB tutorials με author info
       const { data: dbTutorials, error } = await supabase
         .from('tutorials')
         .select('*')
@@ -104,11 +123,28 @@ export function Tutorials() {
         console.error('Error loading tutorials from database:', error);
       }
 
-      // Συνδυάζουμε όλα τα tutorials - προσθέτουμε mock author για DB tutorials
-      const dbTutorialsWithAuthor = (dbTutorials || []).map(tutorial => ({
-        ...tutorial,
-        author: { display_name: 'Chef', verification_status: 'pending' }
-      }));
+      // Fetch author info for each tutorial
+      const dbTutorialsWithAuthor = await Promise.all(
+        (dbTutorials || []).map(async (tutorial) => {
+          if (tutorial.author_id) {
+            const { data: authorData } = await supabase
+              .from('profiles')
+              .select('display_name, verification_status')
+              .eq('user_id', tutorial.author_id)
+              .maybeSingle();
+            
+            return {
+              ...tutorial,
+              author: authorData || { display_name: 'Chef', verification_status: 'pending' }
+            };
+          }
+          return {
+            ...tutorial,
+            author: { display_name: 'Chef', verification_status: 'pending' }
+          };
+        })
+      );
+
       const allTutorials = [...demoTutorials, ...dbTutorialsWithAuthor];
       setTutorials(allTutorials);
     } catch (error) {
@@ -153,6 +189,72 @@ export function Tutorials() {
     }
   };
 
+  const handleCreateTutorial = async () => {
+    if (!user) {
+      toast({
+        title: "Σφάλμα",
+        description: "Πρέπει να συνδεθείτε για να δημιουργήσετε tutorial.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Only verified users can create tutorials
+    if (profile?.verification_status !== 'verified') {
+      toast({
+        title: "Σφάλμα",
+        description: "Μόνο επαληθευμένοι χρήστες μπορούν να δημιουργήσουν tutorials.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const contentSteps = newTutorial.content.split('\n').filter(s => s.trim());
+      
+      const { error } = await supabase
+        .from('tutorials')
+        .insert({
+          author_id: user.id,
+          title: newTutorial.title,
+          description: newTutorial.description,
+          category: newTutorial.category,
+          difficulty_level: newTutorial.difficulty_level,
+          duration: newTutorial.duration,
+          is_free: newTutorial.is_free,
+          video_url: newTutorial.video_url || null,
+          content: contentSteps,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Επιτυχία",
+        description: "Το tutorial δημιουργήθηκε με επιτυχία!",
+      });
+
+      setIsCreateOpen(false);
+      setNewTutorial({
+        title: '',
+        description: '',
+        category: 'basic-techniques',
+        difficulty_level: 1,
+        duration: 10,
+        is_free: false,
+        video_url: '',
+        content: '',
+      });
+      loadTutorials();
+    } catch (error) {
+      console.error('Error creating tutorial:', error);
+      toast({
+        title: "Σφάλμα",
+        description: "Δεν ήταν δυνατή η δημιουργία του tutorial.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -166,11 +268,147 @@ export function Tutorials() {
 
   return (
     <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold mb-4">Tutorials & Τεχνικές</h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          Μάθετε βασικές και προχωρημένες μαγειρικές τεχνικές από επαγγελματίες chef
-        </p>
+      <div className="flex justify-between items-center mb-8">
+        <div className="text-center flex-1">
+          <h2 className="text-3xl font-bold mb-4">Tutorials & Τεχνικές</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Μάθετε βασικές και προχωρημένες μαγειρικές τεχνικές από επαγγελματίες chef
+          </p>
+        </div>
+        
+        {user && profile?.verification_status === 'verified' && (
+          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Νέο Tutorial
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Δημιουργία Νέου Tutorial</DialogTitle>
+                <DialogDescription>
+                  Μοιραστείτε τις γνώσεις σας με την κοινότητα
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="title">Τίτλος</Label>
+                  <Input
+                    id="title"
+                    value={newTutorial.title}
+                    onChange={(e) => setNewTutorial({ ...newTutorial, title: e.target.value })}
+                    placeholder="π.χ. Βασικές τεχνικές κοπής"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="description">Περιγραφή</Label>
+                  <Textarea
+                    id="description"
+                    value={newTutorial.description}
+                    onChange={(e) => setNewTutorial({ ...newTutorial, description: e.target.value })}
+                    placeholder="Μια σύντομη περιγραφή του tutorial"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="category">Κατηγορία</Label>
+                    <Select
+                      value={newTutorial.category}
+                      onValueChange={(value) => setNewTutorial({ ...newTutorial, category: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="knife-skills">Τεχνικές κοπής</SelectItem>
+                        <SelectItem value="basic-techniques">Βασικές τεχνικές</SelectItem>
+                        <SelectItem value="cooking-methods">Μέθοδοι μαγειρέματος</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="difficulty">Δυσκολία</Label>
+                    <Select
+                      value={newTutorial.difficulty_level.toString()}
+                      onValueChange={(value) => setNewTutorial({ ...newTutorial, difficulty_level: parseInt(value) })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Αρχάριο</SelectItem>
+                        <SelectItem value="2">Εύκολο</SelectItem>
+                        <SelectItem value="3">Μέτριο</SelectItem>
+                        <SelectItem value="4">Δύσκολο</SelectItem>
+                        <SelectItem value="5">Επαγγελματικό</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="duration">Διάρκεια (λεπτά)</Label>
+                    <Input
+                      id="duration"
+                      type="number"
+                      value={newTutorial.duration}
+                      onChange={(e) => setNewTutorial({ ...newTutorial, duration: parseInt(e.target.value) })}
+                    />
+                  </div>
+
+                  <div className="flex items-end">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="is_free"
+                        checked={newTutorial.is_free}
+                        onChange={(e) => setNewTutorial({ ...newTutorial, is_free: e.target.checked })}
+                      />
+                      <Label htmlFor="is_free">Δωρεάν Tutorial</Label>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="video">Video URL (YouTube, Vimeo κλπ)</Label>
+                  <Input
+                    id="video"
+                    value={newTutorial.video_url}
+                    onChange={(e) => setNewTutorial({ ...newTutorial, video_url: e.target.value })}
+                    placeholder="https://youtube.com/watch?v=..."
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="content">Βήματα (ένα ανά γραμμή)</Label>
+                  <Textarea
+                    id="content"
+                    value={newTutorial.content}
+                    onChange={(e) => setNewTutorial({ ...newTutorial, content: e.target.value })}
+                    placeholder="Βήμα 1: Κρατήστε το μαχαίρι σωστά&#10;Βήμα 2: Κόψτε τα λαχανικά με την σωστή τεχνική"
+                    rows={8}
+                  />
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
+                  Ακύρωση
+                </Button>
+                <Button onClick={handleCreateTutorial}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Δημιουργία Tutorial
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
@@ -242,6 +480,7 @@ export function Tutorials() {
                     className="w-full" 
                     variant={canViewTutorial(tutorial) ? "default" : "outline"}
                     disabled={!canViewTutorial(tutorial)}
+                    onClick={() => canViewTutorial(tutorial) && setSelectedTutorial(tutorial)}
                   >
                     {canViewTutorial(tutorial) ? (
                       <div className="flex items-center space-x-2">
@@ -287,6 +526,102 @@ export function Tutorials() {
             <Button>Δείτε τα πλάνα συνδρομής</Button>
           </CardContent>
         </Card>
+      )}
+
+      {/* Tutorial Detail Dialog */}
+      {selectedTutorial && (
+        <Dialog open={!!selectedTutorial} onOpenChange={() => setSelectedTutorial(null)}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl">{selectedTutorial.title}</DialogTitle>
+              <DialogDescription>{selectedTutorial.description}</DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6">
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{selectedTutorial.duration} λεπτά</span>
+                  </div>
+                  <Badge className={getDifficultyColor(selectedTutorial.difficulty_level)}>
+                    {getDifficultyText(selectedTutorial.difficulty_level)}
+                  </Badge>
+                  {!selectedTutorial.is_free && (
+                    <Badge variant="secondary">
+                      <Lock className="h-3 w-3 mr-1" />
+                      Premium
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <ChefHat className="h-4 w-4" />
+                  <span className="text-sm">{selectedTutorial.author?.display_name}</span>
+                  {selectedTutorial.author?.verification_status === 'verified' && (
+                    <Badge variant="outline" className="text-xs">Verified</Badge>
+                  )}
+                </div>
+              </div>
+
+              {selectedTutorial.video_url && (
+                <div className="space-y-2">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <Video className="h-5 w-5" />
+                    Βίντεο Tutorial
+                  </h3>
+                  <div className="aspect-video rounded-lg overflow-hidden bg-muted">
+                    {selectedTutorial.video_url.includes('youtube.com') || selectedTutorial.video_url.includes('youtu.be') ? (
+                      <iframe
+                        className="w-full h-full"
+                        src={selectedTutorial.video_url.replace('watch?v=', 'embed/')}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    ) : (
+                      <a
+                        href={selectedTutorial.video_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center h-full text-primary hover:underline"
+                      >
+                        Δείτε το βίντεο
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <Book className="h-5 w-5" />
+                  Βήματα Tutorial
+                </h3>
+                <ScrollArea className="h-[300px] w-full rounded-md border p-4">
+                  <ol className="space-y-3">
+                    {Array.isArray(selectedTutorial.content) ? (
+                      selectedTutorial.content.map((step: any, i: number) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm font-semibold">
+                            {i + 1}
+                          </span>
+                          <span className="flex-1">{typeof step === 'string' ? step : step.text || step}</span>
+                        </li>
+                      ))
+                    ) : (
+                      <p className="text-muted-foreground">Δεν υπάρχουν διαθέσιμα βήματα</p>
+                    )}
+                  </ol>
+                </ScrollArea>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setSelectedTutorial(null)}>
+                Κλείσιμο
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
