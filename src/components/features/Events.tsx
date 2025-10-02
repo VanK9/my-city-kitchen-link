@@ -29,12 +29,17 @@ interface Event {
     display_name: string;
     verification_status: string;
   };
+  userParticipation?: {
+    status: 'confirmed' | 'waitlist' | 'cancelled';
+    id: string;
+  } | null;
 }
 
 export function Events() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [joiningEventId, setJoiningEventId] = useState<string | null>(null);
   const { user, profile } = useAuth();
   const { toast } = useToast();
 
@@ -62,12 +67,27 @@ export function Events() {
         .order('event_date', { ascending: true });
 
       if (error) throw error;
-      // Προσθέτουμε mock organizer για τα events
-      const eventsWithOrganizer = (data || []).map(event => ({
-        ...event,
-        organizer: { display_name: 'Organizer', verification_status: 'pending' }
-      }));
-      setEvents(eventsWithOrganizer);
+
+      // Load user's participation status if logged in
+      let userParticipations: any[] = [];
+      if (user) {
+        const { data: participationData } = await supabase
+          .from('event_participants')
+          .select('event_id, status, id')
+          .eq('user_id', user.id);
+        userParticipations = participationData || [];
+      }
+
+      // Προσθέτουμε mock organizer και participation status
+      const eventsWithDetails = (data || []).map(event => {
+        const participation = userParticipations.find(p => p.event_id === event.id);
+        return {
+          ...event,
+          organizer: { display_name: 'Organizer', verification_status: 'pending' },
+          userParticipation: participation || null
+        };
+      });
+      setEvents(eventsWithDetails);
     } catch (error) {
       console.error('Error loading events:', error);
       toast({
@@ -140,6 +160,99 @@ export function Events() {
 
   const isEventPast = (event: Event) => {
     return new Date(event.event_date) < new Date();
+  };
+
+  const handleJoinEvent = async (event: Event) => {
+    if (!user) {
+      toast({
+        title: 'Απαιτείται σύνδεση',
+        description: 'Παρακαλώ συνδεθείτε για να συμμετάσχετε στο event.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setJoiningEventId(event.id);
+
+    try {
+      const isFull = isEventFull(event);
+      const status = isFull ? 'waitlist' : 'confirmed';
+
+      const { error } = await supabase
+        .from('event_participants')
+        .insert({
+          event_id: event.id,
+          user_id: user.id,
+          status,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Επιτυχία!',
+        description: isFull 
+          ? 'Προστεθήκατε στη λίστα αναμονής για το event.'
+          : 'Εγγραφήκατε επιτυχώς στο event!',
+      });
+
+      // Reload events to update participation status
+      await loadEvents();
+    } catch (error: any) {
+      console.error('Error joining event:', error);
+      toast({
+        title: 'Σφάλμα',
+        description: error.message || 'Δεν μπόρεσε να ολοκληρωθεί η εγγραφή.',
+        variant: 'destructive',
+      });
+    } finally {
+      setJoiningEventId(null);
+    }
+  };
+
+  const handleLeaveEvent = async (event: Event) => {
+    if (!user || !event.userParticipation) return;
+
+    setJoiningEventId(event.id);
+
+    try {
+      const { error } = await supabase
+        .from('event_participants')
+        .delete()
+        .eq('id', event.userParticipation.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Επιτυχία!',
+        description: 'Ακυρώσατε τη συμμετοχή σας στο event.',
+      });
+
+      await loadEvents();
+    } catch (error) {
+      console.error('Error leaving event:', error);
+      toast({
+        title: 'Σφάλμα',
+        description: 'Δεν μπόρεσε να ακυρωθεί η συμμετοχή.',
+        variant: 'destructive',
+      });
+    } finally {
+      setJoiningEventId(null);
+    }
+  };
+
+  const getButtonText = (event: Event) => {
+    if (isEventPast(event)) return "Event ολοκληρώθηκε";
+    if (event.userParticipation?.status === 'confirmed') return "Ακύρωση συμμετοχής";
+    if (event.userParticipation?.status === 'waitlist') return "Στη λίστα αναμονής";
+    if (isEventFull(event)) return "Λίστα αναμονής";
+    return "Συμμετοχή";
+  };
+
+  const getButtonVariant = (event: Event) => {
+    if (isEventPast(event)) return "outline";
+    if (event.userParticipation?.status === 'confirmed') return "destructive";
+    if (event.userParticipation?.status === 'waitlist') return "outline";
+    return "default";
   };
 
   if (loading) {
@@ -362,14 +475,24 @@ export function Events() {
 
               <Button 
                 className="w-full" 
-                variant={isEventPast(event) || isEventFull(event) ? "outline" : "default"}
-                disabled={isEventPast(event) || isEventFull(event)}
+                variant={getButtonVariant(event) as any}
+                disabled={isEventPast(event) || joiningEventId === event.id}
+                onClick={() => {
+                  if (event.userParticipation && event.userParticipation.status !== 'cancelled') {
+                    handleLeaveEvent(event);
+                  } else {
+                    handleJoinEvent(event);
+                  }
+                }}
               >
-                {isEventPast(event) 
-                  ? "Event ολοκληρώθηκε" 
-                  : isEventFull(event)
-                  ? "Πλήρες - Λίστα αναμονής"
-                  : "Συμμετοχή"}
+                {joiningEventId === event.id ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin h-4 w-4 border-b-2 border-current"></div>
+                    <span>Φόρτωση...</span>
+                  </div>
+                ) : (
+                  getButtonText(event)
+                )}
               </Button>
             </CardContent>
           </Card>
