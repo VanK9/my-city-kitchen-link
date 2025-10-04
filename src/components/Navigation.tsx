@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -11,10 +11,12 @@ import {
   Clock, 
   Menu,
   Home,
-  MapPin
+  MapPin,
+  Shield
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AuthButtons } from '@/components/auth/AuthButtons';
+import { supabase } from '@/integrations/supabase/client';
 
 interface NavigationProps {
   currentSection: string;
@@ -24,6 +26,32 @@ interface NavigationProps {
 const Navigation: React.FC<NavigationProps> = ({ currentSection, onSectionChange }) => {
   const { user, profile } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    checkAdminStatus();
+  }, [user]);
+
+  const checkAdminStatus = async () => {
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+
+    try {
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      setIsAdmin(!!data);
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      setIsAdmin(false);
+    }
+  };
 
   const navigationItems = [
     { id: 'home', label: 'Αρχική', icon: Home },
@@ -33,7 +61,8 @@ const Navigation: React.FC<NavigationProps> = ({ currentSection, onSectionChange
     ...(user ? [
       { id: 'work-schedule', label: 'Πρόγραμμα Εργασίας', icon: Clock },
       { id: 'subscriptions', label: 'Συνδρομές', icon: CreditCard },
-      { id: 'profile', label: 'Προφίλ', icon: User }
+      { id: 'profile', label: 'Προφίλ', icon: User },
+      ...(isAdmin ? [{ id: 'admin', label: 'Admin Panel', icon: Shield }] : [])
     ] : [])
   ];
 

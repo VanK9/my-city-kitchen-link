@@ -1088,15 +1088,25 @@ export const EnhancedRecipes = () => {
                   )}
 
                   {recipe.sharing_type === 'paid' && !recipe.is_purchased && recipe.author_id !== user?.id ? (
-                    <Button
-                      size="sm"
-                      variant="default"
-                      onClick={() => handlePurchaseRecipe(recipe)}
-                      disabled={!user}
-                    >
-                      <ShoppingCart className="h-4 w-4 mr-1" />
-                      Αγορά ({recipe.spread_price} spreads)
-                    </Button>
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setSelectedRecipe(recipe)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        Preview
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="default"
+                        onClick={() => handlePurchaseRecipe(recipe)}
+                        disabled={!user}
+                      >
+                        <ShoppingCart className="h-4 w-4 mr-1" />
+                        Αγορά ({recipe.spread_price} spreads)
+                      </Button>
+                    </>
                   ) : (
                     <Button
                       size="sm"
@@ -1143,29 +1153,57 @@ export const EnhancedRecipes = () => {
               </TabsList>
 
               <TabsContent value="ingredients" className="space-y-2">
-                <ScrollArea className="h-[300px] w-full rounded-md border p-4">
-                  <ul className="space-y-2">
-                    {Array.isArray(selectedRecipe.ingredients) && selectedRecipe.ingredients.map((ingredient: any, i: number) => (
-                      <li key={i} className="flex items-start">
-                        <span className="mr-2">•</span>
-                        <span>{typeof ingredient === 'string' ? ingredient : ingredient.item || ingredient}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </ScrollArea>
+                {selectedRecipe.sharing_type === 'paid' && !selectedRecipe.is_purchased && selectedRecipe.author_id !== user?.id ? (
+                  <div className="h-[300px] w-full rounded-md border p-8 flex flex-col items-center justify-center bg-muted/50">
+                    <Lock className="h-12 w-12 text-muted-foreground mb-4" />
+                    <h4 className="text-lg font-semibold mb-2">Κλειδωμένο Περιεχόμενο</h4>
+                    <p className="text-sm text-muted-foreground text-center mb-4">
+                      Αγοράστε αυτή τη συνταγή για να δείτε τα υλικά
+                    </p>
+                    <Button onClick={() => handlePurchaseRecipe(selectedRecipe)}>
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      Αγορά ({selectedRecipe.spread_price} spreads)
+                    </Button>
+                  </div>
+                ) : (
+                  <ScrollArea className="h-[300px] w-full rounded-md border p-4">
+                    <ul className="space-y-2">
+                      {Array.isArray(selectedRecipe.ingredients) && selectedRecipe.ingredients.map((ingredient: any, i: number) => (
+                        <li key={i} className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>{typeof ingredient === 'string' ? ingredient : ingredient.item || ingredient}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </ScrollArea>
+                )}
               </TabsContent>
 
               <TabsContent value="instructions" className="space-y-2">
-                <ScrollArea className="h-[300px] w-full rounded-md border p-4">
-                  <ol className="space-y-4">
-                    {Array.isArray(selectedRecipe.instructions) && selectedRecipe.instructions.map((instruction: any, i: number) => (
-                      <li key={i} className="flex items-start">
-                        <span className="mr-3 font-semibold text-primary">{i + 1}.</span>
-                        <span>{typeof instruction === 'string' ? instruction : instruction.instruction || instruction}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </ScrollArea>
+                {selectedRecipe.sharing_type === 'paid' && !selectedRecipe.is_purchased && selectedRecipe.author_id !== user?.id ? (
+                  <div className="h-[300px] w-full rounded-md border p-8 flex flex-col items-center justify-center bg-muted/50">
+                    <Lock className="h-12 w-12 text-muted-foreground mb-4" />
+                    <h4 className="text-lg font-semibold mb-2">Κλειδωμένο Περιεχόμενο</h4>
+                    <p className="text-sm text-muted-foreground text-center mb-4">
+                      Αγοράστε αυτή τη συνταγή για να δείτε τις οδηγίες
+                    </p>
+                    <Button onClick={() => handlePurchaseRecipe(selectedRecipe)}>
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      Αγορά ({selectedRecipe.spread_price} spreads)
+                    </Button>
+                  </div>
+                ) : (
+                  <ScrollArea className="h-[300px] w-full rounded-md border p-4">
+                    <ol className="space-y-4">
+                      {Array.isArray(selectedRecipe.instructions) && selectedRecipe.instructions.map((instruction: any, i: number) => (
+                        <li key={i} className="flex items-start">
+                          <span className="mr-3 font-semibold text-primary">{i + 1}.</span>
+                          <span>{typeof instruction === 'string' ? instruction : instruction.instruction || instruction}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </ScrollArea>
+                )}
               </TabsContent>
 
               <TabsContent value="nutrition" className="space-y-4">

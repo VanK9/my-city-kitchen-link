@@ -8,6 +8,7 @@ import WorkSchedule from './features/WorkSchedule';
 import CustomizableDashboard from './dashboard/CustomizableDashboard';
 import ProfileManager from './profile/ProfileManager';
 import PeerVerification from './profile/PeerVerification';
+import { EventApproval } from './admin/EventApproval';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -46,6 +47,8 @@ const Layout: React.FC = () => {
             <PeerVerification />
           </div>
         );
+      case 'admin':
+        return <EventApproval />;
       case 'home':
       default:
         if (user) {
