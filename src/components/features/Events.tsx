@@ -12,6 +12,23 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
+import { z } from 'zod';
+
+// Input validation schema for event creation
+const eventSchema = z.object({
+  title: z.string().min(5, 'Ο τίτλος πρέπει να έχει τουλάχιστον 5 χαρακτήρες').max(200, 'Ο τίτλος πρέπει να είναι μικρότερος από 200 χαρακτήρες').trim(),
+  description: z.string().min(10, 'Η περιγραφή πρέπει να έχει τουλάχιστον 10 χαρακτήρες').max(2000, 'Η περιγραφή πρέπει να είναι μικρότερη από 2000 χαρακτήρες').trim(),
+  event_date: z.string().refine((date) => {
+    const eventDate = new Date(date);
+    const now = new Date();
+    return eventDate > now;
+  }, 'Η ημερομηνία του event πρέπει να είναι στο μέλλον'),
+  location: z.string().min(3, 'Η τοποθεσία πρέπει να έχει τουλάχιστον 3 χαρακτήρες').max(200, 'Η τοποθεσία πρέπει να είναι μικρότερη από 200 χαρακτήρες').trim(),
+  city: z.string().min(2, 'Η πόλη πρέπει να έχει τουλάχιστον 2 χαρακτήρες').max(100, 'Η πόλη πρέπει να είναι μικρότερη από 100 χαρακτήρες').trim(),
+  max_participants: z.number().int().min(1, 'Οι συμμετέχοντες πρέπει να είναι τουλάχιστον 1').max(1000, 'Πάρα πολλοί συμμετέχοντες'),
+  price: z.number().min(0, 'Η τιμή δεν μπορεί να είναι αρνητική').max(10000, 'Η τιμή είναι πολύ υψηλή'),
+  materials_needed: z.string().max(1000, 'Τα απαιτούμενα υλικά πρέπει να είναι μικρότερα από 1000 χαρακτήρες').trim()
+});
 
 interface Event {
   id: string;
@@ -105,6 +122,25 @@ export function Events() {
     if (!user) return;
 
     try {
+      // Validate input before processing
+      const validationResult = eventSchema.safeParse(newEvent);
+      
+      if (!validationResult.success) {
+        const firstError = validationResult.error.errors[0];
+        toast({
+          title: 'Σφάλμα Επικύρωσης',
+          description: firstError.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Process materials with length limits
+      const materials = newEvent.materials_needed
+        .split('\n')
+        .map(item => item.trim())
+        .filter(item => item.length > 0 && item.length <= 200);
+
       const { error } = await supabase.from('events').insert({
         organizer_id: user.id,
         title: newEvent.title,
@@ -114,7 +150,7 @@ export function Events() {
         city: newEvent.city,
         max_participants: newEvent.max_participants,
         price: newEvent.price,
-        materials_needed: newEvent.materials_needed.split('\n').filter(item => item.trim()),
+        materials_needed: materials,
         is_approved: false, // Requires admin approval
       });
 

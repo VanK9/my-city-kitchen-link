@@ -134,7 +134,18 @@ export const EventApproval = () => {
         })
         .eq('id', eventId);
 
-      if (error) throw error;
+      if (error) {
+        // Handle RLS policy violations with user-friendly message
+        if (error.code === '42501') {
+          toast({
+            title: 'Άρνηση Πρόσβασης',
+            description: 'Δεν έχετε δικαίωμα να εγκρίνετε events. Χρειάζεστε ρόλο admin.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        throw error;
+      }
 
       toast({
         title: 'Επιτυχία',
@@ -162,7 +173,18 @@ export const EventApproval = () => {
         .delete()
         .eq('id', eventId);
 
-      if (error) throw error;
+      if (error) {
+        // Handle RLS policy violations with user-friendly message
+        if (error.code === '42501') {
+          toast({
+            title: 'Άρνηση Πρόσβασης',
+            description: 'Δεν έχετε δικαίωμα να διαγράψετε events. Χρειάζεστε ρόλο admin.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        throw error;
+      }
 
       toast({
         title: 'Επιτυχία',

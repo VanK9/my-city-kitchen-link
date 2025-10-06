@@ -36,6 +36,32 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { z } from 'zod';
+
+// Input validation schema for recipe creation
+const recipeSchema = z.object({
+  title: z.string().min(3, 'Ο τίτλος πρέπει να έχει τουλάχιστον 3 χαρακτήρες').max(200, 'Ο τίτλος πρέπει να είναι μικρότερος από 200 χαρακτήρες').trim(),
+  description: z.string().max(2000, 'Η περιγραφή πρέπει να είναι μικρότερη από 2000 χαρακτήρες').trim(),
+  ingredients: z.string().min(1, 'Προσθέστε τουλάχιστον ένα υλικό').max(5000, 'Τα υλικά πρέπει να είναι μικρότερα από 5000 χαρακτήρες').trim(),
+  instructions: z.string().min(1, 'Προσθέστε τουλάχιστον μία οδηγία').max(10000, 'Οι οδηγίες πρέπει να είναι μικρότερες από 10000 χαρακτήρες').trim(),
+  prep_time: z.number().int().min(0, 'Μη έγκυρος χρόνος προετοιμασίας').max(1440, 'Ο χρόνος προετοιμασίας δεν μπορεί να υπερβαίνει τα 1440 λεπτά'),
+  cook_time: z.number().int().min(0, 'Μη έγκυρος χρόνος μαγειρέματος').max(1440, 'Ο χρόνος μαγειρέματος δεν μπορεί να υπερβαίνει τα 1440 λεπτά'),
+  servings: z.number().int().min(1, 'Οι μερίδες πρέπει να είναι τουλάχιστον 1').max(100, 'Οι μερίδες δεν μπορούν να υπερβαίνουν τις 100'),
+  spread_price: z.number().int().min(0, 'Η τιμή δεν μπορεί να είναι αρνητική').max(10000, 'Η τιμή δεν μπορεί να υπερβαίνει τα 10000 spreads'),
+  sharing_type: z.enum(['private', 'public', 'paid'], { errorMap: () => ({ message: 'Επιλέξτε έγκυρο τύπο κοινοποίησης' }) }),
+  tags: z.string().max(500, 'Τα tags πρέπει να είναι μικρότερα από 500 χαρακτήρες').trim(),
+  dietary_info: z.string().max(500, 'Οι διατροφικές πληροφορίες πρέπει να είναι μικρότερες από 500 χαρακτήρες').trim(),
+  cuisine_type: z.string().max(100, 'Ο τύπος κουζίνας πρέπει να είναι μικρότερος από 100 χαρακτήρες').trim().optional(),
+  meal_type: z.string().max(100, 'Ο τύπος γεύματος πρέπει να είναι μικρότερος από 100 χαρακτήρες').trim().optional(),
+  tips: z.string().max(1000, 'Οι συμβουλές πρέπει να είναι μικρότερες από 1000 χαρακτήρες').trim().optional(),
+  video_url: z.string().max(500, 'Το URL του βίντεο πρέπει να είναι μικρότερο από 500 χαρακτήρες').trim().optional(),
+  difficulty_level: z.number().int().min(1).max(5).optional(),
+  calories: z.number().int().min(0).optional(),
+  protein: z.number().min(0).optional(),
+  carbs: z.number().min(0).optional(),
+  fats: z.number().min(0).optional(),
+  fiber: z.number().min(0).optional()
+});
 
 interface Recipe {
   id: string;
@@ -304,13 +330,10 @@ export const EnhancedRecipes = () => {
         continue;
       }
 
-      const { data: urlData } = supabase.storage
-        .from('recipe-images')
-        .getPublicUrl(fileName);
-
+      // Store the file path (not public URL) for security
       uploadedImages.push({
         recipe_id: recipeId,
-        image_url: urlData.publicUrl,
+        image_url: fileName, // Store path, not public URL
         is_primary: i === 0,
         display_order: i
       });
@@ -334,10 +357,39 @@ export const EnhancedRecipes = () => {
     }
 
     try {
-      const ingredients = newRecipe.ingredients.split('\n').filter(i => i.trim());
-      const instructions = newRecipe.instructions.split('\n').filter(i => i.trim());
-      const tags = newRecipe.tags.split(',').map(t => t.trim()).filter(t => t);
-      const dietary_info = newRecipe.dietary_info.split(',').map(d => d.trim()).filter(d => d);
+      // Validate input before processing
+      const validationResult = recipeSchema.safeParse(newRecipe);
+      
+      if (!validationResult.success) {
+        const firstError = validationResult.error.errors[0];
+        toast({
+          title: "Σφάλμα Επικύρωσης",
+          description: firstError.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Process validated data with length limits on array elements
+      const ingredients = newRecipe.ingredients
+        .split('\n')
+        .map(i => i.trim())
+        .filter(i => i.length > 0 && i.length <= 500);
+      
+      const instructions = newRecipe.instructions
+        .split('\n')
+        .map(i => i.trim())
+        .filter(i => i.length > 0 && i.length <= 1000);
+      
+      const tags = newRecipe.tags
+        .split(',')
+        .map(t => t.trim())
+        .filter(t => t.length > 0 && t.length <= 50);
+      
+      const dietary_info = newRecipe.dietary_info
+        .split(',')
+        .map(d => d.trim())
+        .filter(d => d.length > 0 && d.length <= 100);
 
       const { data, error } = await supabase
         .from('recipes')
