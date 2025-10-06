@@ -47,8 +47,8 @@ export function Recipes() {
     cook_time: 0,
     servings: 1,
     difficulty_level: 1,
-    is_premium: false,
-    price: 0,
+    sharing_type: 'private',
+    spread_price: 0,
   });
 
   useEffect(() => {
@@ -106,8 +106,8 @@ export function Recipes() {
         cook_time: newRecipe.cook_time,
         servings: newRecipe.servings,
         difficulty_level: newRecipe.difficulty_level,
-        is_premium: newRecipe.is_premium,
-        price: newRecipe.is_premium ? newRecipe.price : null,
+        sharing_type: newRecipe.sharing_type,
+        spread_price: newRecipe.sharing_type === 'paid' ? newRecipe.spread_price : 0,
       });
 
       if (error) throw error;
@@ -127,8 +127,8 @@ export function Recipes() {
         cook_time: 0,
         servings: 1,
         difficulty_level: 1,
-        is_premium: false,
-        price: 0,
+        sharing_type: 'private',
+        spread_price: 0,
       });
       loadRecipes();
     } catch (error) {
@@ -273,32 +273,40 @@ export function Recipes() {
                   />
                 </div>
 
-                {subscription?.subscribed && (
-                  <div className="space-y-4 p-4 border rounded-lg bg-accent/50">
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="is_premium"
-                        checked={newRecipe.is_premium}
-                        onChange={(e) => setNewRecipe({ ...newRecipe, is_premium: e.target.checked })}
-                      />
-                      <Label htmlFor="is_premium">Premium συνταγή (προς πώληση)</Label>
-                    </div>
-                    
-                    {newRecipe.is_premium && (
-                      <div className="space-y-2">
-                        <Label htmlFor="price">Τιμή (€)</Label>
-                        <Input
-                          id="price"
-                          type="number"
-                          step="0.01"
-                          value={newRecipe.price}
-                          onChange={(e) => setNewRecipe({ ...newRecipe, price: parseFloat(e.target.value) || 0 })}
-                        />
-                      </div>
-                    )}
+                <div className="space-y-4 p-4 border rounded-lg bg-accent/50">
+                  <div className="space-y-2">
+                    <Label htmlFor="sharing_type">Τύπος Κοινοποίησης</Label>
+                    <Select 
+                      value={newRecipe.sharing_type} 
+                      onValueChange={(value) => setNewRecipe({ ...newRecipe, sharing_type: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="private">Ιδιωτική (Μόνο εσείς)</SelectItem>
+                        <SelectItem value="public">Δημόσια (Δωρεάν για όλους)</SelectItem>
+                        <SelectItem value="paid">Πληρωμένη (Με Spread)</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                )}
+                  
+                  {newRecipe.sharing_type === 'paid' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="spread_price">Τιμή σε Spread</Label>
+                      <Input
+                        id="spread_price"
+                        type="number"
+                        value={newRecipe.spread_price}
+                        onChange={(e) => setNewRecipe({ ...newRecipe, spread_price: parseInt(e.target.value) || 0 })}
+                        placeholder="π.χ. 50"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Οι χρήστες θα χρειαστεί να πληρώσουν {newRecipe.spread_price} Spread για να δουν τη συνταγή
+                      </p>
+                    </div>
+                  )}
+                </div>
                 
                 <Button type="submit" className="w-full">Δημιουργία Συνταγής</Button>
               </form>
