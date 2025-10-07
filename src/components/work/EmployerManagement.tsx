@@ -18,7 +18,7 @@ const employerSchema = z.object({
   tax_id: z.string().optional(),
   address: z.string().optional(),
   phone: z.string().optional(),
-  email: z.string().email().optional().or(z.literal('')),
+  email: z.string().email('Μη έγκυρο email').or(z.literal('')).optional(),
 });
 
 type EmployerFormData = z.infer<typeof employerSchema>;
@@ -266,10 +266,17 @@ export const EmployerManagement: React.FC = () => {
                   )}
                 />
                 <div className="flex gap-2 pt-4">
-                  <Button type="submit" className="flex-1">
-                    {editingEmployer ? 'Ενημέρωση' : 'Προσθήκη'}
+                  <Button type="submit" className="flex-1" disabled={saving}>
+                    {saving ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Αποθήκευση...
+                      </>
+                    ) : (
+                      editingEmployer ? 'Ενημέρωση' : 'Προσθήκη'
+                    )}
                   </Button>
-                  <Button type="button" variant="outline" onClick={handleDialogClose}>
+                  <Button type="button" variant="outline" onClick={handleDialogClose} disabled={saving}>
                     Ακύρωση
                   </Button>
                 </div>
