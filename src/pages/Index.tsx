@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import DashboardLayout from "@/components/DashboardLayout";
+import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChefHat, Calendar, BookOpen, Users, ArrowRight } from "lucide-react";
@@ -8,9 +8,9 @@ import { Link } from "react-router-dom";
 const Index = () => {
   const { user } = useAuth();
 
-  // If user is logged in, show the dashboard
+  // If user is logged in, show the full app with navigation
   if (user) {
-    return <DashboardLayout />;
+    return <Layout />;
   }
 
   // Otherwise show landing page with app-style design
