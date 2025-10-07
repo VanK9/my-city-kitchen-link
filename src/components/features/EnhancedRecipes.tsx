@@ -184,90 +184,71 @@ export const EnhancedRecipes = () => {
   const loadRecipes = async () => {
     try {
       setLoading(true);
+      console.log('Loading recipes with filter:', filterType);
+      
       let query = supabase
         .from('recipes')
-        .select(`
-          *,
-          images:recipe_images(*)
-        `);
+        .select('*');
 
       if (filterType === 'my' && user) {
         query = query.eq('author_id', user.id);
       } else if (filterType === 'public') {
         query = query.eq('sharing_type', 'public');
       } else if (filterType === 'saved' && user) {
-        const { data: saves } = await supabase
+        const { data: saves, error: savesError } = await supabase
           .from('recipe_saves')
           .select('recipe_id')
           .eq('user_id', user.id);
         
-        if (saves) {
+        if (savesError) {
+          console.error('Error loading saves:', savesError);
+          throw savesError;
+        }
+        
+        if (saves && saves.length > 0) {
           const recipeIds = saves.map(s => s.recipe_id);
           query = query.in('id', recipeIds);
+        } else {
+          // No saved recipes
+          setRecipes([]);
+          setLoading(false);
+          return;
         }
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false });
+      const { data, error } = await query.order('created_at', { ascending: false }).limit(50);
 
-      if (error) throw error;
-
-      // Check if recipes are saved or purchased by current user
-      if (data && user) {
-        const { data: saves } = await supabase
-          .from('recipe_saves')
-          .select('recipe_id')
-          .eq('user_id', user.id);
-
-        const { data: purchases } = await supabase
-          .from('recipe_purchases')
-          .select('recipe_id')
-          .eq('buyer_id', user.id);
-
-        const savedIds = saves?.map(s => s.recipe_id) || [];
-        const purchasedIds = purchases?.map(p => p.recipe_id) || [];
-
-        // Fetch author info for each recipe
-        const recipesWithAuthors = await Promise.all(
-          data.map(async (recipe) => {
-            if (recipe.author_id) {
-              const { data: authorData } = await supabase
-                .from('profiles')
-                .select('display_name, avatar_url')
-                .eq('user_id', recipe.author_id)
-                .maybeSingle();
-              
-              return {
-                ...recipe,
-                sharing_type: recipe.sharing_type as 'private' | 'public' | 'paid',
-                is_saved: savedIds.includes(recipe.id),
-                is_purchased: purchasedIds.includes(recipe.id),
-                author: authorData || undefined
-              };
-            }
-            return {
-              ...recipe,
-              sharing_type: recipe.sharing_type as 'private' | 'public' | 'paid',
-              is_saved: savedIds.includes(recipe.id),
-              is_purchased: purchasedIds.includes(recipe.id)
-            };
-          })
-        );
-
-        setRecipes(recipesWithAuthors);
-      } else if (data) {
-        setRecipes((data || []).map(recipe => ({
-          ...recipe,
-          sharing_type: recipe.sharing_type as 'private' | 'public' | 'paid'
-        })));
+      if (error) {
+        console.error('Query error:', error);
+        throw error;
       }
-    } catch (error) {
+
+      console.log('Loaded recipes count:', data?.length || 0);
+
+      if (!data || data.length === 0) {
+        setRecipes([]);
+        return;
+      }
+
+      // Simplified data processing without N+1 queries
+      const processedRecipes = data.map(recipe => ({
+        ...recipe,
+        sharing_type: recipe.sharing_type as 'private' | 'public' | 'paid',
+        is_saved: false,
+        is_purchased: false
+      }));
+
+      setRecipes(processedRecipes);
+    } catch (error: any) {
       console.error('Error loading recipes:', error);
       toast({
         title: "Σφάλμα",
-        description: "Δεν ήταν δυνατή η φόρτωση των συνταγών.",
+        description: error.message || "Δεν ήταν δυνατή η φόρτωση των συνταγών.",
         variant: "destructive",
       });
+      setRecipes([]);
     } finally {
+      console.log('Loading complete');
       setLoading(false);
     }
   };

@@ -77,26 +77,45 @@ export function Events() {
 
   const loadEvents = async () => {
     try {
+      setLoading(true);
+      console.log('Loading events...');
+      
       const { data, error } = await supabase
         .from('events')
         .select('*')
         .eq('is_approved', true)
-        .order('event_date', { ascending: true });
+        .order('event_date', { ascending: true })
+        .limit(50);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Query error:', error);
+        throw error;
+      }
+
+      console.log('Loaded events count:', data?.length || 0);
+
+      if (!data || data.length === 0) {
+        setEvents([]);
+        return;
+      }
 
       // Load user's participation status if logged in
       let userParticipations: any[] = [];
       if (user) {
-        const { data: participationData } = await supabase
+        const { data: participationData, error: partError } = await supabase
           .from('event_participants')
           .select('event_id, status, id')
           .eq('user_id', user.id);
-        userParticipations = participationData || [];
+        
+        if (partError) {
+          console.error('Participation error:', partError);
+        } else {
+          userParticipations = participationData || [];
+        }
       }
 
-      // Προσθέτουμε mock organizer και participation status
-      const eventsWithDetails = (data || []).map(event => {
+      // Simplified data processing
+      const eventsWithDetails = data.map(event => {
         const participation = userParticipations.find(p => p.event_id === event.id);
         return {
           ...event,
@@ -104,15 +123,18 @@ export function Events() {
           userParticipation: participation || null
         };
       });
+      
       setEvents(eventsWithDetails);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading events:', error);
       toast({
         title: 'Σφάλμα',
-        description: 'Δεν μπόρεσαν να φορτωθούν τα events',
+        description: error.message || 'Δεν μπόρεσαν να φορτωθούν τα events',
         variant: 'destructive',
       });
+      setEvents([]);
     } finally {
+      console.log('Loading complete');
       setLoading(false);
     }
   };
