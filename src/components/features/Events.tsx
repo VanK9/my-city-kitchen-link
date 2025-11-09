@@ -458,8 +458,13 @@ export function Events() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {events.map((event) => (
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {events.map((event) => (
           <Card key={event.id} className={`overflow-hidden ${isEventPast(event) ? 'opacity-75' : ''}`}>
             <CardHeader className="pb-3">
               <div className="flex justify-between items-start">
@@ -554,10 +559,11 @@ export function Events() {
               </Button>
             </CardContent>
           </Card>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
-      {events.length === 0 && (
+      {!loading && events.length === 0 && (
         <div className="text-center py-12">
           <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">Δεν υπάρχουν events ακόμα</h3>
