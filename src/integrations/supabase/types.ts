@@ -702,54 +702,72 @@ export type Database = {
       work_contracts: {
         Row: {
           base_amount: number
+          children_allowance: number | null
           christmas_bonus: boolean | null
           contract_type: string
           created_at: string
           easter_bonus: boolean | null
           employer_id: string
           end_date: string | null
+          hazard_pay: number | null
           holiday_bonus: boolean | null
           id: string
           is_active: boolean | null
+          meal_allowance: number | null
           night_rate: number | null
+          notes: string | null
+          other_allowances: number | null
           overtime_rate: number | null
           start_date: string
+          transport_allowance: number | null
           updated_at: string
           user_id: string
           vacation_bonus: boolean | null
         }
         Insert: {
           base_amount: number
+          children_allowance?: number | null
           christmas_bonus?: boolean | null
           contract_type: string
           created_at?: string
           easter_bonus?: boolean | null
           employer_id: string
           end_date?: string | null
+          hazard_pay?: number | null
           holiday_bonus?: boolean | null
           id?: string
           is_active?: boolean | null
+          meal_allowance?: number | null
           night_rate?: number | null
+          notes?: string | null
+          other_allowances?: number | null
           overtime_rate?: number | null
           start_date: string
+          transport_allowance?: number | null
           updated_at?: string
           user_id: string
           vacation_bonus?: boolean | null
         }
         Update: {
           base_amount?: number
+          children_allowance?: number | null
           christmas_bonus?: boolean | null
           contract_type?: string
           created_at?: string
           easter_bonus?: boolean | null
           employer_id?: string
           end_date?: string | null
+          hazard_pay?: number | null
           holiday_bonus?: boolean | null
           id?: string
           is_active?: boolean | null
+          meal_allowance?: number | null
           night_rate?: number | null
+          notes?: string | null
+          other_allowances?: number | null
           overtime_rate?: number | null
           start_date?: string
+          transport_allowance?: number | null
           updated_at?: string
           user_id?: string
           vacation_bonus?: boolean | null

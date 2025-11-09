@@ -25,9 +25,15 @@ const contractSchema = z.object({
   christmas_bonus: z.boolean(),
   easter_bonus: z.boolean(),
   vacation_bonus: z.boolean(),
+  children_allowance: z.number().min(0).optional(),
+  hazard_pay: z.number().min(0).optional(),
+  transport_allowance: z.number().min(0).optional(),
+  meal_allowance: z.number().min(0).optional(),
+  other_allowances: z.number().min(0).optional(),
   start_date: z.string().min(1, 'Η ημερομηνία έναρξης είναι υποχρεωτική'),
   end_date: z.string().optional(),
   is_active: z.boolean(),
+  notes: z.string().optional(),
 });
 
 type ContractFormData = z.infer<typeof contractSchema>;
@@ -53,9 +59,15 @@ export const WorkContracts: React.FC = () => {
       christmas_bonus: false,
       easter_bonus: false,
       vacation_bonus: false,
+      children_allowance: 0,
+      hazard_pay: 0,
+      transport_allowance: 0,
+      meal_allowance: 0,
+      other_allowances: 0,
       start_date: '',
       end_date: '',
       is_active: true,
+      notes: '',
     },
   });
 
@@ -106,9 +118,15 @@ export const WorkContracts: React.FC = () => {
         christmas_bonus: data.christmas_bonus,
         easter_bonus: data.easter_bonus,
         vacation_bonus: data.vacation_bonus,
+        children_allowance: Number(data.children_allowance) || 0,
+        hazard_pay: Number(data.hazard_pay) || 0,
+        transport_allowance: Number(data.transport_allowance) || 0,
+        meal_allowance: Number(data.meal_allowance) || 0,
+        other_allowances: Number(data.other_allowances) || 0,
         start_date: data.start_date,
         end_date: data.end_date || null,
         is_active: data.is_active,
+        notes: data.notes || null,
         user_id: user.id,
       };
 
@@ -251,6 +269,267 @@ export const WorkContracts: React.FC = () => {
                     )}
                   />
                 </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="overtime_rate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Συντελεστής Υπερωριών</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="1.5"
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="night_rate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Συντελεστής Νυχτερινής</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="1.25"
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="start_date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ημερομηνία Έναρξης *</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="end_date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ημερομηνία Λήξης (προαιρετικό)</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="space-y-4 border-t pt-4">
+                  <h4 className="text-sm font-medium">Δώρα & Επιδόματα</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="holiday_bonus"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center justify-between p-3 border rounded-lg">
+                          <FormLabel className="cursor-pointer">Δώρο Αργιών</FormLabel>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="christmas_bonus"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center justify-between p-3 border rounded-lg">
+                          <FormLabel className="cursor-pointer">Δώρο Χριστουγέννων</FormLabel>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="easter_bonus"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center justify-between p-3 border rounded-lg">
+                          <FormLabel className="cursor-pointer">Δώρο Πάσχα</FormLabel>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="vacation_bonus"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center justify-between p-3 border rounded-lg">
+                          <FormLabel className="cursor-pointer">Επίδομα Αδείας</FormLabel>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4 border-t pt-4">
+                  <h4 className="text-sm font-medium">Πρόσθετα Επιδόματα (προαιρετικά)</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="children_allowance"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Επίδομα Τέκνων (€)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="0.00"
+                              {...field}
+                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="hazard_pay"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Επίδομα Επικινδυνότητας (€)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="0.00"
+                              {...field}
+                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="transport_allowance"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Επίδομα Μετακίνησης (€)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="0.00"
+                              {...field}
+                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="meal_allowance"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Επίδομα Σίτισης (€)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="0.00"
+                              {...field}
+                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="other_allowances"
+                      render={({ field }) => (
+                        <FormItem className="col-span-2">
+                          <FormLabel>Άλλα Επιδόματα (€)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="0.00"
+                              {...field}
+                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Σημειώσεις (προαιρετικό)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Πρόσθετες πληροφορίες..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="is_active"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-between p-3 border rounded-lg">
+                      <FormLabel className="cursor-pointer">Ενεργή Σύμβαση</FormLabel>
+                      <FormControl>
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
 
                 <div className="flex gap-2 pt-4">
                   <Button type="submit" className="flex-1" disabled={saving}>
