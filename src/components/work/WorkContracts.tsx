@@ -213,11 +213,17 @@ export const WorkContracts: React.FC = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {employers.map((employer) => (
-                            <SelectItem key={employer.id} value={employer.id}>
-                              {employer.employer_name} {employer.company_name && `(${employer.company_name})`}
+                          {employers.length === 0 ? (
+                            <SelectItem value="none" disabled>
+                              Δεν υπάρχουν εργοδότες - Προσθέστε έναν πρώτα
                             </SelectItem>
-                          ))}
+                          ) : (
+                            employers.map((employer) => (
+                              <SelectItem key={employer.id} value={employer.id}>
+                                {employer.employer_name} {employer.company_name && `(${employer.company_name})`}
+                              </SelectItem>
+                            ))
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />

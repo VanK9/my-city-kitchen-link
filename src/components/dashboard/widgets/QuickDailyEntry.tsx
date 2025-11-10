@@ -113,24 +113,46 @@ const QuickDailyEntry: React.FC = () => {
               </select>
             )}
             
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => saveQuickEntry(8)}
+                variant="default"
+                className="h-20 flex flex-col items-center justify-center"
+                onClick={() => saveQuickEntry(8, 0)}
                 disabled={isLoading}
               >
-                <Clock className="h-4 w-4 mr-1" />
-                8 ώρες
+                <Clock className="h-5 w-5 mb-1" />
+                <span className="text-base font-bold">8ωρο</span>
+                <span className="text-xs opacity-80">Κανονικό</span>
+              </Button>
+              <Button
+                variant="secondary"
+                className="h-20 flex flex-col items-center justify-center"
+                onClick={() => saveQuickEntry(8, 2)}
+                disabled={isLoading}
+              >
+                <Plus className="h-5 w-5 mb-1" />
+                <span className="text-base font-bold">8ωρο + 2h</span>
+                <span className="text-xs opacity-80">Υπερωρίες</span>
               </Button>
               <Button
                 variant="outline"
-                className="flex-1"
-                onClick={() => saveQuickEntry(8, 1)}
+                className="h-20 flex flex-col items-center justify-center"
+                onClick={() => saveQuickEntry(10, 2)}
                 disabled={isLoading}
               >
-                <Plus className="h-4 w-4 mr-1" />
-                8ώρες + 1 υπερωρία
+                <Plus className="h-5 w-5 mb-1" />
+                <span className="text-base font-bold">10ωρο + 2h</span>
+                <span className="text-xs opacity-80">Πλήρες</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-20 flex flex-col items-center justify-center"
+                onClick={() => saveQuickEntry(12, 4)}
+                disabled={isLoading}
+              >
+                <Plus className="h-5 w-5 mb-1" />
+                <span className="text-base font-bold">12ωρο + 4h</span>
+                <span className="text-xs opacity-80">Μεγάλη</span>
               </Button>
             </div>
             
