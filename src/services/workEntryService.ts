@@ -46,7 +46,7 @@ export const saveWorkEntry = async (
 ) => {
   const { error } = await supabase
     .from('work_entries')
-    .insert({
+    .upsert({
       user_id: userId,
       contract_id: contractId,
       entry_date: date,
@@ -54,6 +54,9 @@ export const saveWorkEntry = async (
       overtime_hours: overtimeHours,
       daily_wage: dailyWage,
       notes
+    }, {
+      onConflict: 'user_id,contract_id,entry_date',
+      ignoreDuplicates: false
     });
 
   return { error };
