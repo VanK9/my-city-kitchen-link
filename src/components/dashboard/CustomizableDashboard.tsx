@@ -17,11 +17,13 @@ import QuickStatsWidget from './widgets/QuickStatsWidget';
 import WorkScheduleQuickAccess from './widgets/WorkScheduleQuickAccess';
 import CommunityFeedWidget from './widgets/CommunityFeedWidget';
 import QuickDailyEntry from './widgets/QuickDailyEntry';
+import MonthlyBalanceWidget from './widgets/MonthlyBalanceWidget';
 import { useDashboardPreferences } from '@/hooks/useDashboardPreferences';
 
 const availableWidgets = [
-  { id: 'quick-stats', name: 'Γρήγορα Στατιστικά', component: QuickStatsWidget },
+  { id: 'monthly-balance', name: 'Μηνιαίος Μισθός', component: MonthlyBalanceWidget },
   { id: 'quick-daily-entry', name: 'Γρήγορη Καταχώρηση', component: QuickDailyEntry },
+  { id: 'quick-stats', name: 'Γρήγορα Στατιστικά', component: QuickStatsWidget },
   { id: 'work-schedule', name: 'Πρόγραμμα Εργασίας', component: WorkScheduleQuickAccess },
   { id: 'community-feed', name: 'Κοινότητα Feed', component: CommunityFeedWidget },
 ];

@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import WorkSchedulePage from "./pages/WorkSchedule";
 import NotFound from "./pages/NotFound";
 import TutorialsPage from "./pages/Tutorials";
+import ProfileSettings from "./pages/ProfileSettings";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/work-schedule" element={<WorkSchedulePage />} />
             <Route path="/tutorials" element={<TutorialsPage />} />
+            <Route path="/profile-settings" element={<ProfileSettings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

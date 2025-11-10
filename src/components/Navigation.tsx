@@ -12,11 +12,13 @@ import {
   Menu,
   Home,
   MapPin,
-  Shield
+  Shield,
+  Settings as SettingsIcon
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AuthButtons } from '@/components/auth/AuthButtons';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 interface NavigationProps {
   currentSection: string;
@@ -25,6 +27,7 @@ interface NavigationProps {
 
 const Navigation: React.FC<NavigationProps> = ({ currentSection, onSectionChange }) => {
   const { user, profile } = useAuth();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -115,6 +118,16 @@ const Navigation: React.FC<NavigationProps> = ({ currentSection, onSectionChange
                   <MapPin className="h-3 w-3" />
                   <span>{profile.city}</span>
                 </Badge>
+              )}
+              {user && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/profile-settings')}
+                  className="hidden md:flex"
+                >
+                  <SettingsIcon className="h-4 w-4" />
+                </Button>
               )}
               <AuthButtons />
               
