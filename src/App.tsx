@@ -10,6 +10,8 @@ import WorkSchedulePage from "./pages/WorkSchedule";
 import NotFound from "./pages/NotFound";
 import TutorialsPage from "./pages/Tutorials";
 import ProfileSettings from "./pages/ProfileSettings";
+import TutorialEditor from "./pages/TutorialEditor";
+import RecipeEditor from "./pages/RecipeEditor";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +27,8 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/work-schedule" element={<WorkSchedulePage />} />
             <Route path="/tutorials" element={<TutorialsPage />} />
+            <Route path="/tutorials/new" element={<TutorialEditor />} />
+            <Route path="/recipes/new" element={<RecipeEditor />} />
             <Route path="/profile-settings" element={<ProfileSettings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

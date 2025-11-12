@@ -7,8 +7,8 @@ export interface DashboardPreferences {
 
 export const useDashboardPreferences = () => {
   const [preferences, setPreferences] = useState<DashboardPreferences>({
-    visibleWidgets: ['monthly-balance', 'quick-daily-entry', 'work-schedule', 'quick-stats'],
-    widgetOrder: ['monthly-balance', 'quick-daily-entry', 'work-schedule', 'quick-stats']
+    visibleWidgets: ['monthly-balance', 'quick-daily-entry', 'salary-trend', 'salary-breakdown', 'work-schedule', 'quick-stats'],
+    widgetOrder: ['monthly-balance', 'quick-daily-entry', 'salary-trend', 'salary-breakdown', 'work-schedule', 'quick-stats']
   });
 
   // Load preferences from localStorage on mount
@@ -46,8 +46,8 @@ export const useDashboardPreferences = () => {
 
   const resetToDefaults = () => {
     setPreferences({
-      visibleWidgets: ['monthly-balance', 'quick-daily-entry', 'work-schedule', 'quick-stats'],
-      widgetOrder: ['monthly-balance', 'quick-daily-entry', 'work-schedule', 'quick-stats']
+      visibleWidgets: ['monthly-balance', 'quick-daily-entry', 'salary-trend', 'salary-breakdown', 'work-schedule', 'quick-stats'],
+      widgetOrder: ['monthly-balance', 'quick-daily-entry', 'salary-trend', 'salary-breakdown', 'work-schedule', 'quick-stats']
     });
   };
 

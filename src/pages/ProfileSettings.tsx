@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, Lock, Settings, ArrowLeft } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { User, Lock, Settings, ArrowLeft, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -16,17 +17,63 @@ const ProfileSettings = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   
   // Profile data
   const [displayName, setDisplayName] = useState(profile?.display_name || '');
   const [bio, setBio] = useState(profile?.bio || '');
   const [specialty, setSpecialty] = useState(profile?.specialty || '');
   const [city, setCity] = useState(profile?.city || '');
+  const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || '');
   
   // Password data
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!user || !event.target.files || event.target.files.length === 0) return;
+
+    const file = event.target.files[0];
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+    setUploadingAvatar(true);
+
+    // Delete old avatar if exists
+    if (avatarUrl) {
+      const oldPath = avatarUrl.split('/').slice(-2).join('/');
+      await supabase.storage.from('avatars').remove([oldPath]);
+    }
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(fileName, file, { upsert: true });
+
+    if (uploadError) {
+      toast.error('Σφάλμα κατά το ανέβασμα της φωτογραφίας');
+      setUploadingAvatar(false);
+      return;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(fileName);
+
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ avatar_url: publicUrl })
+      .eq('user_id', user.id);
+
+    setUploadingAvatar(false);
+
+    if (updateError) {
+      toast.error('Σφάλμα κατά την ενημέρωση προφίλ');
+    } else {
+      setAvatarUrl(publicUrl);
+      toast.success('Η φωτογραφία ενημερώθηκε επιτυχώς!');
+    }
+  };
 
   const handleUpdateProfile = async () => {
     if (!user) return;
@@ -146,6 +193,31 @@ const ProfileSettings = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="flex flex-col items-center space-y-4 pb-6">
+                  <Avatar className="h-24 w-24">
+                    <AvatarImage src={avatarUrl} />
+                    <AvatarFallback className="text-2xl">
+                      {displayName?.[0] || user.email?.[0] || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <Label htmlFor="avatar-upload" className="cursor-pointer">
+                      <div className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
+                        <Upload className="h-4 w-4" />
+                        {uploadingAvatar ? 'Ανέβασμα...' : 'Αλλαγή Φωτογραφίας'}
+                      </div>
+                      <Input
+                        id="avatar-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        disabled={uploadingAvatar}
+                        className="hidden"
+                      />
+                    </Label>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input

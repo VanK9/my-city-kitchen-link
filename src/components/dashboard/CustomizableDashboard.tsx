@@ -18,11 +18,15 @@ import WorkScheduleQuickAccess from './widgets/WorkScheduleQuickAccess';
 import CommunityFeedWidget from './widgets/CommunityFeedWidget';
 import QuickDailyEntry from './widgets/QuickDailyEntry';
 import MonthlyBalanceWidget from './widgets/MonthlyBalanceWidget';
+import { SalaryTrendWidget } from './widgets/SalaryTrendWidget';
+import { SalaryBreakdownWidget } from './widgets/SalaryBreakdownWidget';
 import { useDashboardPreferences } from '@/hooks/useDashboardPreferences';
 
 const availableWidgets = [
   { id: 'monthly-balance', name: 'Μηνιαίος Μισθός', component: MonthlyBalanceWidget },
   { id: 'quick-daily-entry', name: 'Γρήγορη Καταχώρηση', component: QuickDailyEntry },
+  { id: 'salary-trend', name: 'Πορεία Μισθού', component: SalaryTrendWidget },
+  { id: 'salary-breakdown', name: 'Ανάλυση ανά Σύμβαση', component: SalaryBreakdownWidget },
   { id: 'quick-stats', name: 'Γρήγορα Στατιστικά', component: QuickStatsWidget },
   { id: 'work-schedule', name: 'Πρόγραμμα Εργασίας', component: WorkScheduleQuickAccess },
   { id: 'community-feed', name: 'Κοινότητα Feed', component: CommunityFeedWidget },
