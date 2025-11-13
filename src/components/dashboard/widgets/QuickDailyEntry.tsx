@@ -1,44 +1,84 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, Plus, CheckCircle2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Clock, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import { useWorkContracts } from '@/hooks/useWorkContracts';
-import { useTodayEntry } from '@/hooks/useTodayEntry';
 import { calculateDailyWage, saveWorkEntry, updateMonthlySummary } from '@/services/workEntryService';
+import { supabase } from '@/integrations/supabase/client';
 
 const QuickDailyEntry: React.FC = () => {
   const { user } = useAuth();
   const { contracts } = useWorkContracts();
-  const { hasTodayEntry, checkTodayEntry, today } = useTodayEntry();
-  const [selectedContract, setSelectedContract] = useState<string>(contracts[0]?.id || '');
+  const [selectedContract, setSelectedContract] = useState<string>('');
+  const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
   const [isLoading, setIsLoading] = useState(false);
+  const [extraHours, setExtraHours] = useState<string>('0');
+  const [includeNightHours, setIncludeNightHours] = useState(false);
+  const [existingEntries, setExistingEntries] = useState<Set<string>>(new Set());
 
-  React.useEffect(() => {
+  const dateOptions = [
+    { label: 'Σήμερα', date: format(new Date(), 'yyyy-MM-dd') },
+    { label: 'Χτες', date: format(subDays(new Date(), 1), 'yyyy-MM-dd') },
+    { label: 'Προχτές', date: format(subDays(new Date(), 2), 'yyyy-MM-dd') },
+    { label: 'Προπροχτές', date: format(subDays(new Date(), 3), 'yyyy-MM-dd') },
+  ];
+
+  useEffect(() => {
     if (contracts.length > 0 && !selectedContract) {
       setSelectedContract(contracts[0].id);
     }
   }, [contracts]);
 
-  const saveQuickEntry = async (hours: number, overtimeHours: number = 0) => {
+  useEffect(() => {
+    if (user && selectedContract) {
+      checkExistingEntries();
+    }
+  }, [user, selectedContract]);
+
+  const checkExistingEntries = async () => {
     if (!user || !selectedContract) return;
+
+    const dates = dateOptions.map(d => d.date);
+    const { data } = await supabase
+      .from('work_entries')
+      .select('entry_date')
+      .eq('user_id', user.id)
+      .eq('contract_id', selectedContract)
+      .in('entry_date', dates);
+
+    if (data) {
+      setExistingEntries(new Set(data.map(entry => entry.entry_date)));
+    }
+  };
+
+  const saveQuickEntry = async () => {
+    if (!user || !selectedContract || existingEntries.has(selectedDate)) return;
 
     setIsLoading(true);
     const contract = contracts.find(c => c.id === selectedContract);
-    if (!contract) return;
+    if (!contract) {
+      setIsLoading(false);
+      return;
+    }
 
-    const dailyWage = calculateDailyWage(contract, hours, overtimeHours);
-    const notes = overtimeHours > 0 
-      ? `Γρήγορη καταχώρηση: ${hours}ώρες + ${overtimeHours}ώρες υπερωρία` 
-      : `Γρήγορη καταχώρηση: ${hours}ώρες`;
+    const regularHours = 8;
+    const overtimeHours = parseFloat(extraHours) || 0;
+    const nightHours = includeNightHours ? 8 : 0;
+
+    const dailyWage = calculateDailyWage(contract, regularHours, overtimeHours);
+    const notes = `Γρήγορη καταχώρηση: ${regularHours}ώρες${overtimeHours > 0 ? ` + ${overtimeHours}ώρες υπερωρία` : ''}${nightHours > 0 ? ` + ${nightHours}ώρες νυχτερινές` : ''}`;
 
     const { error } = await saveWorkEntry(
       user.id,
       selectedContract,
-      today,
-      hours,
+      selectedDate,
+      regularHours,
       overtimeHours,
       dailyWage,
       notes
@@ -52,7 +92,9 @@ const QuickDailyEntry: React.FC = () => {
     }
 
     toast.success('Η εργασία καταχωρήθηκε επιτυχώς!');
-    await checkTodayEntry();
+    setExtraHours('0');
+    setIncludeNightHours(false);
+    await checkExistingEntries();
     await updateMonthlySummary(user.id, selectedContract);
   };
 
@@ -90,20 +132,16 @@ const QuickDailyEntry: React.FC = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {hasTodayEntry ? (
-          <div className="text-center py-4">
-            <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">
-              Έχετε ήδη καταχωρήσει εργασία για σήμερα
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {contracts.length > 1 && (
+        <div className="space-y-4">
+          {/* Επιλογή Εργοδότη */}
+          {contracts.length > 1 && (
+            <div>
+              <Label htmlFor="contract-select" className="text-sm font-medium">Εργοδότης</Label>
               <select
+                id="contract-select"
                 value={selectedContract}
                 onChange={(e) => setSelectedContract(e.target.value)}
-                className="w-full p-2 border rounded-md text-sm"
+                className="w-full mt-1 p-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 {contracts.map((contract) => (
                   <option key={contract.id} value={contract.id}>
@@ -111,56 +149,86 @@ const QuickDailyEntry: React.FC = () => {
                   </option>
                 ))}
               </select>
-            )}
-            
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant="default"
-                className="h-20 flex flex-col items-center justify-center"
-                onClick={() => saveQuickEntry(8, 0)}
-                disabled={isLoading}
-              >
-                <Clock className="h-5 w-5 mb-1" />
-                <span className="text-base font-bold">8ωρο</span>
-                <span className="text-xs opacity-80">Κανονικό</span>
-              </Button>
-              <Button
-                variant="secondary"
-                className="h-20 flex flex-col items-center justify-center"
-                onClick={() => saveQuickEntry(8, 2)}
-                disabled={isLoading}
-              >
-                <Plus className="h-5 w-5 mb-1" />
-                <span className="text-base font-bold">8ωρο + 2h</span>
-                <span className="text-xs opacity-80">Υπερωρίες</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="h-20 flex flex-col items-center justify-center"
-                onClick={() => saveQuickEntry(10, 2)}
-                disabled={isLoading}
-              >
-                <Plus className="h-5 w-5 mb-1" />
-                <span className="text-base font-bold">10ωρο + 2h</span>
-                <span className="text-xs opacity-80">Πλήρες</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="h-20 flex flex-col items-center justify-center"
-                onClick={() => saveQuickEntry(12, 4)}
-                disabled={isLoading}
-              >
-                <Plus className="h-5 w-5 mb-1" />
-                <span className="text-base font-bold">12ωρο + 4h</span>
-                <span className="text-xs opacity-80">Μεγάλη</span>
-              </Button>
             </div>
-            
-            <p className="text-xs text-center text-muted-foreground">
-              {format(new Date(), 'dd/MM/yyyy')}
-            </p>
+          )}
+
+          {/* Επιλογή Ημερομηνίας */}
+          <div>
+            <Label className="text-sm font-medium">Ημερομηνία</Label>
+            <div className="grid grid-cols-4 gap-2 mt-1">
+              {dateOptions.map((option) => {
+                const hasEntry = existingEntries.has(option.date);
+                return (
+                  <Button
+                    key={option.date}
+                    variant={selectedDate === option.date ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedDate(option.date)}
+                    disabled={hasEntry}
+                    className="relative"
+                  >
+                    {hasEntry && (
+                      <CheckCircle2 className="h-3 w-3 absolute top-1 right-1" />
+                    )}
+                    {option.label}
+                  </Button>
+                );
+              })}
+            </div>
           </div>
-        )}
+
+          {/* 8ωρο (πάντα επιλεγμένο) */}
+          <div className="p-3 border border-input rounded-md bg-muted/50">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              <span className="text-sm font-medium">8ωρο (Κανονικό)</span>
+            </div>
+          </div>
+
+          {/* Extra Ώρες */}
+          <div>
+            <Label htmlFor="extra-hours" className="text-sm font-medium">Extra Ώρες (Υπερωρίες)</Label>
+            <Input
+              id="extra-hours"
+              type="number"
+              min="0"
+              max="12"
+              step="0.5"
+              value={extraHours}
+              onChange={(e) => setExtraHours(e.target.value)}
+              className="mt-1"
+              placeholder="0"
+            />
+          </div>
+
+          {/* Checkbox για Νυχτερινές Ώρες */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="night-hours"
+              checked={includeNightHours}
+              onCheckedChange={(checked) => setIncludeNightHours(checked as boolean)}
+            />
+            <Label
+              htmlFor="night-hours"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Νυχτερινές Ώρες (8ωρο)
+            </Label>
+          </div>
+
+          {/* Κουμπί Αποθήκευσης */}
+          <Button
+            onClick={saveQuickEntry}
+            disabled={isLoading || existingEntries.has(selectedDate) || !selectedContract}
+            className="w-full"
+          >
+            {isLoading ? 'Αποθήκευση...' : 'Καταχώρηση'}
+          </Button>
+
+          <p className="text-xs text-center text-muted-foreground">
+            {format(new Date(selectedDate), 'dd/MM/yyyy')}
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
