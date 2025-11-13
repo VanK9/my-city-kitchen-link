@@ -126,7 +126,8 @@ const Navigation: React.FC<NavigationProps> = ({ currentSection, onSectionChange
                   onClick={() => navigate('/profile-settings')}
                   className="hidden md:flex"
                 >
-                  <SettingsIcon className="h-4 w-4" />
+                  <SettingsIcon className="h-4 w-4 mr-2" />
+                  Ρυθμίσεις
                 </Button>
               )}
               <AuthButtons />
@@ -165,6 +166,24 @@ const Navigation: React.FC<NavigationProps> = ({ currentSection, onSectionChange
                         </Button>
                       );
                     })}
+                    
+                    {user && (
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          navigate('/profile-settings');
+                          setIsOpen(false);
+                        }}
+                        className="justify-start w-full"
+                      >
+                        <SettingsIcon className="h-5 w-5 mr-3" />
+                        Ρυθμίσεις Προφίλ
+                      </Button>
+                    )}
+                    
+                    <div className="pt-4 border-t">
+                      <AuthButtons />
+                    </div>
                   </div>
                 </SheetContent>
               </Sheet>

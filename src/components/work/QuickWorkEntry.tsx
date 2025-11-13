@@ -7,11 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Clock, Calendar, Save, Calculator, Euro, Loader2, AlertCircle } from 'lucide-react';
+import { Clock, Calendar, Save, Calculator, Euro, Loader2, AlertCircle, Edit, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { el } from 'date-fns/locale';
+import { WorkEntryEditDialog } from './WorkEntryEditDialog';
 
 interface WorkContract {
   id: string;
@@ -65,6 +66,9 @@ export const QuickWorkEntry: React.FC = () => {
   const [monthlySummary, setMonthlySummary] = useState<MonthlySummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingContracts, setLoadingContracts] = useState(true);
+  const [monthEntries, setMonthEntries] = useState<any[]>([]);
+  const [editingEntry, setEditingEntry] = useState<any>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -75,9 +79,10 @@ export const QuickWorkEntry: React.FC = () => {
   useEffect(() => {
     if (selectedContract) {
       loadMonthlySummary();
+      loadMonthEntries();
       calculateEstimatedPay();
     }
-  }, [selectedContract, entry.regular_hours, entry.overtime_hours, entry.night_hours, entry.holiday_hours]);
+  }, [selectedContract, entry.regular_hours, entry.overtime_hours, entry.night_hours, entry.holiday_hours, selectedDate]);
 
   const loadContracts = async () => {
     setLoadingContracts(true);
@@ -218,11 +223,60 @@ export const QuickWorkEntry: React.FC = () => {
       });
       
       loadMonthlySummary();
+      loadMonthEntries();
     } catch (error) {
       console.error('Error saving entry:', error);
       toast.error('Σφάλμα κατά την αποθήκευση');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMonthEntries = async () => {
+    if (!user || !selectedContract) return;
+
+    const date = new Date(selectedDate);
+    const startDate = format(startOfMonth(date), 'yyyy-MM-dd');
+    const endDate = format(endOfMonth(date), 'yyyy-MM-dd');
+
+    try {
+      const { data, error } = await supabase
+        .from('work_entries')
+        .select('*')
+        .eq('contract_id', selectedContract)
+        .gte('entry_date', startDate)
+        .lte('entry_date', endDate)
+        .order('entry_date', { ascending: false });
+
+      if (error) throw error;
+      setMonthEntries(data || []);
+    } catch (error) {
+      console.error('Error loading entries:', error);
+    }
+  };
+
+  const handleEditEntry = (entry: any) => {
+    setEditingEntry(entry);
+    setShowEditDialog(true);
+  };
+
+  const handleDeleteEntry = async (entryId: string) => {
+    if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την καταχώρηση;')) return;
+
+    try {
+      const { error } = await supabase
+        .from('work_entries')
+        .delete()
+        .eq('id', entryId);
+
+      if (error) throw error;
+
+      toast.success('Η καταχώρηση διαγράφηκε');
+      loadMonthEntries();
+      loadMonthlySummary();
+    } catch (error) {
+      console.error('Error deleting entry:', error);
+      toast.error('Σφάλμα κατά τη διαγραφή');
     }
   };
 
@@ -494,6 +548,71 @@ export const QuickWorkEntry: React.FC = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Month Entries List */}
+      {monthEntries.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Καταχωρήσεις Μήνα</CardTitle>
+            <CardDescription>
+              {format(new Date(selectedDate), 'MMMM yyyy', { locale: el })}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {monthEntries.map((entry) => (
+                <div
+                  key={entry.id}
+                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">
+                        {format(new Date(entry.entry_date), 'dd/MM/yyyy')}
+                      </span>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {entry.regular_hours}ω κανονικές
+                      {entry.overtime_hours > 0 && ` + ${entry.overtime_hours}ω υπερωρίες`}
+                      {entry.night_hours > 0 && ` + ${entry.night_hours}ω νυχτερινές`}
+                    </div>
+                    <div className="text-sm font-medium text-primary mt-1">
+                      €{entry.daily_wage?.toFixed(2)}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEditEntry(entry)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteEntry(entry.id)}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <WorkEntryEditDialog
+        entry={editingEntry}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onSuccess={() => {
+          loadMonthEntries();
+          loadMonthlySummary();
+        }}
+      />
     </div>
   );
 };
