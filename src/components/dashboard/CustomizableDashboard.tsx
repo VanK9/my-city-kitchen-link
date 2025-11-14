@@ -68,9 +68,9 @@ const CustomizableDashboard: React.FC = () => {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Πίνακας Ελέγχου</h2>
+    <div className="space-y-4 pb-6">
+      <div className="flex items-center justify-between px-1">
+        <h2 className="text-xl md:text-2xl font-bold">Πίνακας Ελέγχου</h2>
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" size="sm">
@@ -124,7 +124,7 @@ const CustomizableDashboard: React.FC = () => {
       {visibleWidgets.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-muted-foreground mb-4">
+            <p className="text-sm text-muted-foreground mb-4">
               Δεν έχετε επιλέξει widgets για εμφάνιση
             </p>
             <Sheet>
@@ -138,7 +138,7 @@ const CustomizableDashboard: React.FC = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-4">
           {visibleWidgets.map((widgetId, index) => {
             const widget = availableWidgets.find(w => w.id === widgetId);
             if (!widget) return null;
@@ -154,14 +154,7 @@ const CustomizableDashboard: React.FC = () => {
                 onDrop={(e) => handleDrop(e, index)}
                 className={isCustomizing ? 'cursor-move' : ''}
               >
-                <DashboardWidget
-                  id={widgetId}
-                  title={widget.name}
-                  onRemove={isCustomizing ? toggleWidgetVisibility : undefined}
-                  isDragging={false}
-                >
-                  <WidgetComponent />
-                </DashboardWidget>
+                <WidgetComponent />
               </div>
             );
           })}
