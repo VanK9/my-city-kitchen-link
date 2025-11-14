@@ -120,15 +120,26 @@ const Navigation: React.FC<NavigationProps> = ({ currentSection, onSectionChange
                 </Badge>
               )}
               {user && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate('/profile-settings')}
-                  className="hidden md:flex"
-                >
-                  <SettingsIcon className="h-4 w-4 mr-2" />
-                  Ρυθμίσεις
-                </Button>
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => navigate('/profile-settings')}
+                    className="relative"
+                    title="Προφίλ & Ρυθμίσεις"
+                  >
+                    <User className="h-5 w-5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate('/profile-settings')}
+                    className="hidden md:flex"
+                  >
+                    <SettingsIcon className="h-4 w-4 mr-2" />
+                    Ρυθμίσεις
+                  </Button>
+                </>
               )}
               <AuthButtons />
               

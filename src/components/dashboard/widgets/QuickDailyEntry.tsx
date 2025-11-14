@@ -133,10 +133,10 @@ const QuickDailyEntry: React.FC = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {/* Επιλογή Εργοδότη */}
+          {/* Επιλογή Σύμβασης */}
           {contracts.length > 1 && (
             <div>
-              <Label htmlFor="contract-select" className="text-sm font-medium">Εργοδότης</Label>
+              <Label htmlFor="contract-select" className="text-sm font-medium">Σύμβαση Εργασίας</Label>
               <select
                 id="contract-select"
                 value={selectedContract}
@@ -145,7 +145,7 @@ const QuickDailyEntry: React.FC = () => {
               >
                 {contracts.map((contract) => (
                   <option key={contract.id} value={contract.id}>
-                    {contract.employers?.employer_name}
+                    {contract.employers?.employer_name} - {contract.contract_type}
                   </option>
                 ))}
               </select>
