@@ -151,16 +151,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentSection, onSectionChange
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-80">
-                  <div className="flex flex-col space-y-4 mt-8">
-                    <div className="text-center pb-4 border-b">
-                      <div className="h-12 w-12 bg-gradient-to-br from-primary to-primary-glow rounded-xl flex items-center justify-center mx-auto mb-2 shadow-warm">
-                        <ChefHat className="h-7 w-7 text-primary-foreground" />
-                      </div>
-                      <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
-                        SpreadIt
-                      </h2>
-                      <p className="text-sm text-muted-foreground">Κοινότητα Μαγείρων</p>
-                    </div>
+                  <div className="flex flex-col space-y-4 mt-4">
                     
                     {navigationItems.map((item) => {
                       const Icon = item.icon;
