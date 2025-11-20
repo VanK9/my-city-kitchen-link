@@ -180,7 +180,7 @@ const Layout: React.FC = () => {
               <p className="text-muted-foreground mb-6">
                 Εγγραφείτε σήμερα και αποκτήστε πρόσβαση σε όλες τις δυνατότητες του SpreadIt.
               </p>
-              <Button size="lg" className="bg-primary hover:bg-primary/90">
+              <Button size="lg" className="bg-primary hover:bg-primary/90" onClick={() => window.location.href = '/auth'}>
                 Εγγραφή Τώρα
               </Button>
             </div>
