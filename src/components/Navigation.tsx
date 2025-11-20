@@ -80,7 +80,10 @@ const Navigation: React.FC<NavigationProps> = ({ currentSection, onSectionChange
       <header className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+            <button 
+              onClick={() => onSectionChange('home')}
+              className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity"
+            >
               <div className="h-10 w-10 bg-gradient-to-br from-primary to-primary-glow rounded-xl flex items-center justify-center shadow-warm">
                 <ChefHat className="h-6 w-6 text-primary-foreground" />
               </div>
@@ -90,7 +93,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentSection, onSectionChange
                 </h1>
                 <p className="text-xs text-muted-foreground">Κοινότητα Μαγείρων</p>
               </div>
-            </div>
+            </button>
 
             {/* Desktop Navigation Menu */}
             <nav className="hidden md:flex items-center space-x-6">
