@@ -140,3 +140,12 @@ All colors MUST be HSL. Theme based on culinary/cooking colors.
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

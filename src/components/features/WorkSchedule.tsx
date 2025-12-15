@@ -216,24 +216,30 @@ const WorkSchedule: React.FC = () => {
 
       {/* Tabs for different work management sections */}
       <Tabs defaultValue="quick-entry" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="quick-entry">
-            <ClipboardList className="h-4 w-4 mr-2" />
-            Γρήγορη Καταχώρηση
-          </TabsTrigger>
-          <TabsTrigger value="employers">
-            <Building2 className="h-4 w-4 mr-2" />
-            Εργοδότες
-          </TabsTrigger>
-          <TabsTrigger value="contracts">
-            <FileText className="h-4 w-4 mr-2" />
-            Συμβάσεις
-          </TabsTrigger>
-          <TabsTrigger value="history">
-            <Calendar className="h-4 w-4 mr-2" />
-            Ιστορικό
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
+          <TabsList className="inline-flex w-auto min-w-full md:grid md:grid-cols-4 md:w-full gap-1">
+            <TabsTrigger value="quick-entry" className="flex-shrink-0 px-3 py-2 text-xs md:text-sm">
+              <ClipboardList className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">Γρήγορη Καταχώρηση</span>
+              <span className="md:hidden">Καταχώρηση</span>
+            </TabsTrigger>
+            <TabsTrigger value="employers" className="flex-shrink-0 px-3 py-2 text-xs md:text-sm">
+              <Building2 className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">Εργοδότες</span>
+              <span className="md:hidden">Εργοδότες</span>
+            </TabsTrigger>
+            <TabsTrigger value="contracts" className="flex-shrink-0 px-3 py-2 text-xs md:text-sm">
+              <FileText className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">Συμβάσεις</span>
+              <span className="md:hidden">Συμβάσεις</span>
+            </TabsTrigger>
+            <TabsTrigger value="history" className="flex-shrink-0 px-3 py-2 text-xs md:text-sm">
+              <Calendar className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">Ιστορικό</span>
+              <span className="md:hidden">Ιστορικό</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Quick Work Entry Tab */}
         <TabsContent value="quick-entry" className="space-y-4">
