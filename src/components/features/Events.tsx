@@ -139,9 +139,13 @@ export function Events() {
     }
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || isSubmitting) return;
+
+    setIsSubmitting(true);
 
     try {
       // Validate input before processing
@@ -157,6 +161,54 @@ export function Events() {
         return;
       }
 
+      // Check for duplicate events (same title, date, location by same user)
+      const eventDate = new Date(newEvent.event_date);
+      const startOfDay = new Date(eventDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(eventDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const { data: existingEvents, error: checkError } = await supabase
+        .from('events')
+        .select('id, title, event_date')
+        .eq('organizer_id', user.id)
+        .gte('event_date', startOfDay.toISOString())
+        .lte('event_date', endOfDay.toISOString());
+
+      if (checkError) throw checkError;
+
+      // Check for similar title on same day
+      const similarEvent = existingEvents?.find(e => 
+        e.title.toLowerCase().trim() === newEvent.title.toLowerCase().trim()
+      );
+
+      if (similarEvent) {
+        toast({
+          title: 'Πιθανό Διπλότυπο',
+          description: 'Έχετε ήδη δημιουργήσει ένα event με παρόμοιο τίτλο την ίδια ημέρα. Παρακαλώ ελέγξτε τα events σας.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Check for too many pending events from same user (rate limiting)
+      const { data: pendingEvents, error: pendingError } = await supabase
+        .from('events')
+        .select('id')
+        .eq('organizer_id', user.id)
+        .eq('is_approved', false);
+
+      if (pendingError) throw pendingError;
+
+      if (pendingEvents && pendingEvents.length >= 5) {
+        toast({
+          title: 'Όριο Events',
+          description: 'Έχετε ήδη 5 events σε αναμονή έγκρισης. Παρακαλώ περιμένετε να εγκριθούν πριν δημιουργήσετε νέα.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
       // Process materials with length limits
       const materials = newEvent.materials_needed
         .split('\n')
@@ -165,11 +217,11 @@ export function Events() {
 
       const { error } = await supabase.from('events').insert({
         organizer_id: user.id,
-        title: newEvent.title,
-        description: newEvent.description,
+        title: newEvent.title.trim(),
+        description: newEvent.description.trim(),
         event_date: newEvent.event_date,
-        location: newEvent.location,
-        city: newEvent.city,
+        location: newEvent.location.trim(),
+        city: newEvent.city.trim(),
         max_participants: newEvent.max_participants,
         price: newEvent.price,
         materials_needed: materials,
@@ -201,6 +253,8 @@ export function Events() {
         description: 'Δεν μπόρεσε να δημιουργηθεί το event',
         variant: 'destructive',
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -451,7 +505,9 @@ export function Events() {
                   </div>
                 </div>
                 
-                <Button type="submit" className="w-full">Υποβολή Event</Button>
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? 'Υποβολή...' : 'Υποβολή Event'}
+                </Button>
               </form>
             </DialogContent>
           </Dialog>
