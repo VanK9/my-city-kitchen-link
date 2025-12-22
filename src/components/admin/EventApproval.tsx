@@ -125,6 +125,9 @@ export const EventApproval = () => {
   const handleApprove = async (eventId: string) => {
     setProcessingId(eventId);
     try {
+      // Find the event to get details for email
+      const eventToApprove = pendingEvents.find(e => e.id === eventId);
+      
       const { error } = await supabase
         .from('events')
         .update({
@@ -147,9 +150,33 @@ export const EventApproval = () => {
         throw error;
       }
 
+      // Send approval email notification
+      if (eventToApprove) {
+        try {
+          const { error: emailError } = await supabase.functions.invoke('send-event-approval-email', {
+            body: {
+              eventId: eventToApprove.id,
+              eventTitle: eventToApprove.title,
+              eventDate: eventToApprove.event_date,
+              eventLocation: `${eventToApprove.location}, ${eventToApprove.city}`,
+              organizerId: eventToApprove.organizer_id,
+            },
+          });
+
+          if (emailError) {
+            console.error('Error sending approval email:', emailError);
+            // Don't fail the approval if email fails
+          } else {
+            console.log('Approval email sent successfully');
+          }
+        } catch (emailErr) {
+          console.error('Error invoking email function:', emailErr);
+        }
+      }
+
       toast({
         title: 'Επιτυχία',
-        description: 'Το event εγκρίθηκε!',
+        description: 'Το event εγκρίθηκε και ο οργανωτής ενημερώθηκε!',
       });
 
       await loadEvents();
